@@ -1,5 +1,6 @@
-package simter.simter;
+package com.simter;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +13,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SimterApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SimterApplication.class, args);
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // 환경 변수를 시스템 속성으로 설정
+        System.setProperty("DB_ROOTPW", dotenv.get("DB_ROOTPW"));
+        System.setProperty("DB_PORT", dotenv.get("DB_PORT"));
+        System.setProperty("DB_USER", dotenv.get("DB_USER"));
+        System.setProperty("DB_PW", dotenv.get("DB_PW"));
+
+        SpringApplication.run(SimterApplication.class, args);
 	}
 
     @Entity
