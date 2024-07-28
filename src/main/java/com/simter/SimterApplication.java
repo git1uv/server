@@ -1,4 +1,4 @@
-package simter.simter;
+package com.simter;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
