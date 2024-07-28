@@ -15,7 +15,6 @@ public class SimterApplication {
 	public static void main(String[] args) {
         Dotenv dotenv = Dotenv.configure().load();
 
-        // 환경 변수를 시스템 속성으로 설정
         System.setProperty("DB_ROOTPW", dotenv.get("DB_ROOTPW"));
         System.setProperty("DB_PORT", dotenv.get("DB_PORT"));
         System.setProperty("DB_USER", dotenv.get("DB_USER"));
