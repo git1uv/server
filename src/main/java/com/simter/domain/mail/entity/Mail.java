@@ -21,13 +21,17 @@ public class Mail {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Member userId;
+    @JoinColumn(name = "user_id")
+    private Member member;
 
     @Column(nullable = false, length = 500)
     private String content;
 
     @Column(nullable = false, length = 100)
     private String chatbotType;
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
     @Column(updatable = false)
     private LocalDateTime deletedAt;

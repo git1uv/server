@@ -21,7 +21,7 @@ public class Member {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(length = 20)
+    @Column(length = 100)
     private String password;
 
     @Column(length = 20)
