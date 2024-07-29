@@ -1,14 +1,12 @@
 package com.simter.domain.chatbot.entity;
 
 import com.simter.domain.member.entity.Member;
-import com.simter.domain.solution.entity.Solution;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Getter
@@ -43,15 +41,6 @@ public class CounselingLog {
 
     @Column(nullable = false, length = 100)
     private String title;
-
-    @OneToMany(mappedBy = "counselingLog", cascade = CascadeType.ALL)
-    private List<ChatbotMessage> chatbotMessagesList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "counselingLog", cascade = CascadeType.ALL)
-    private List<CalendarCounselingLog> calendarCounselingLogList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "counselingLog", cascade = CascadeType.ALL)
-    private List<Solution> solutionList = new ArrayList<>();
 
 
 }

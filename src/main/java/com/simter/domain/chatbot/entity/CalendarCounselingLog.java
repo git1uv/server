@@ -14,11 +14,13 @@ public class CalendarCounselingLog {
     private CalendarCounselingLogId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "calendar_id")
+    @MapsId("calendarId")
+    @JoinColumn(name = "calendar_id", insertable = false, updatable = false)
     private Calendars calendars;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "counseling_log_id")
+    @MapsId("counselingLogId")
+    @JoinColumn(name = "counseling_log_id", insertable = false, updatable = false)
     private CounselingLog counselingLog;
 
 

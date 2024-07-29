@@ -1,13 +1,12 @@
 package com.simter.domain.solution.entity;
 
-import com.simter.domain.calendar.entity.Calendars;
+
 import com.simter.domain.chatbot.entity.CounselingLog;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Getter
@@ -31,8 +30,6 @@ public class Solution {
     @ColumnDefault("false")
     private Boolean isCompleted;
 
-    @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL)
-    private List<CalendarSolution> calendarSolutionList = new ArrayList<>();
 
 
 }
