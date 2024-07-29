@@ -21,7 +21,7 @@ public class ChatbotMessage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "counseling_log_id")
-    private CounselingLog counselingLogId;
+    private CounselingLog counselingLog;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

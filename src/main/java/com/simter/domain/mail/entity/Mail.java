@@ -1,14 +1,12 @@
 package com.simter.domain.mail.entity;
 
-import com.simter.domain.calendar.entity.Calendars;
 import com.simter.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Getter
@@ -42,8 +40,6 @@ public class Mail {
     @ColumnDefault("false")
     private Boolean isDeleted;
 
-    @OneToMany(mappedBy = "mail", cascade = CascadeType.ALL)
-    private List<UserMailbox> userMailboxList = new ArrayList<>();
 
 
 

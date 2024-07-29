@@ -4,7 +4,6 @@ import com.simter.domain.calendar.entity.Calendars;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Calendar;
 
 @Entity
 @Getter
@@ -18,11 +17,11 @@ public class CalendarSolution {
     private CalendarSolutionId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "calendar_id", nullable = false)
+    @JoinColumn(name = "calendar_id", nullable = false, insertable=false, updatable=false)
     private Calendars calendar;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "solution_id", nullable = false)
+    @JoinColumn(name = "solution_id", nullable = false, insertable=false, updatable=false)
     private Solution solution;
 }
 
