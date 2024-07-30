@@ -9,6 +9,7 @@ import com.simter.domain.member.exception.InvalidNicknameFormatException;
 import com.simter.domain.member.exception.InvalidPasswordFormatException;
 import com.simter.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,7 @@ public class MemberController {
                     .status(201)
                     .message("회원가입 성공")
                     .build();
-            return ResponseEntity.status(200).body(res);
+            return ResponseEntity.status(HttpStatus.CREATED).body(res);
         }
         catch (InvalidEmailFormatException e){
             BasicResponseDto res = BasicResponseDto.builder()
@@ -58,7 +59,7 @@ public class MemberController {
                     .status(500)
                     .message("회원가입 실패")
                     .build();
-            return ResponseEntity.status(500).body(res);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         }
     }
 
@@ -68,7 +69,7 @@ public class MemberController {
             EmailValidationResponseDto res = memberService.validateDuplicate(
                     emailValidationRequestDto.getEmail());
 
-            return ResponseEntity.status(200).body(res);
+            return ResponseEntity.status(HttpStatus.OK).body(res);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -77,7 +78,8 @@ public class MemberController {
                     .message("이메일 중복 조회 실패")
                     .isValid(false)
                     .build();
-            return ResponseEntity.status(500).body(res);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         }
     }
 }
+
