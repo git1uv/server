@@ -1,5 +1,7 @@
 package com.simter.domain.airplane.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +19,8 @@ public class AirplaneGetResponseDto {
     public static class DataDto {
         private String writerName;
         private String content;
-        private String createdAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        private LocalDate createdAt;  // LocalDate로 변경
     }
 
 }

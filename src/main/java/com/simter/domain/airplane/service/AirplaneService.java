@@ -54,7 +54,7 @@ public class AirplaneService {
             AirplaneGetResponseDto.DataDto data = new AirplaneGetResponseDto.DataDto(
                     airplane.getWriterName(),
                     airplane.getContent(),
-                    airplane.getCreatedAt().toString()
+                    airplane.getCreatedAt().toLocalDate()
             );
 
             return new AirplaneGetResponseDto("종이 비행기 불러오기 성공", data);
