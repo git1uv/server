@@ -1,9 +1,13 @@
-
 services:
   app:
     image: mysql:8
     env_file:
       - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOTPW}
+      MYSQL_DATABASE: simter_database
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PW}
     networks:
       - app_network
     depends_on:
@@ -13,13 +17,15 @@ services:
   mysql:
     image: mysql:8.0
     container_name: simter_mysql_container
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOTPW}
       MYSQL_DATABASE: simter_database
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PW}
     ports:
-      - "{DB_PORT}:${DB_PORT}"
+      - "${DB_PORT}:${DB_PORT}"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql

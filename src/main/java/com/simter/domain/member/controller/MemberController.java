@@ -32,28 +32,28 @@ public class MemberController {
                     .build();
             return ResponseEntity.status(HttpStatus.CREATED).body(res);
         }
-        catch (InvalidEmailFormatException e){
+        catch (InvalidEmailFormatException e) {
             BasicResponseDto res = BasicResponseDto.builder()
                     .status(403)
                     .message(e.getMessage())
                     .build();
             return ResponseEntity.status(403).body(res);
         }
-        catch (InvalidPasswordFormatException e){
+        catch (InvalidPasswordFormatException e) {
             BasicResponseDto res = BasicResponseDto.builder()
                     .status(403)
                     .message(e.getMessage())
                     .build();
             return ResponseEntity.status(403).body(res);
         }
-        catch (InvalidNicknameFormatException e){
+        catch (InvalidNicknameFormatException e) {
             BasicResponseDto res = BasicResponseDto.builder()
                     .status(403)
                     .message(e.getMessage())
                     .build();
             return ResponseEntity.status(403).body(res);
         }
-        catch (Exception e){
+        catch (Exception e) {
             e.printStackTrace();
             BasicResponseDto res = BasicResponseDto.builder()
                     .status(500)
@@ -65,13 +65,13 @@ public class MemberController {
 
     @GetMapping("/api/v1/register/general/check")
     public ResponseEntity<EmailValidationResponseDto> checkRegister(@RequestBody EmailValidationRequestDto emailValidationRequestDto) {
-        try{
+        try {
             EmailValidationResponseDto res = memberService.validateDuplicate(
                     emailValidationRequestDto.getEmail());
 
             return ResponseEntity.status(HttpStatus.OK).body(res);
-        }
-        catch (Exception e){
+            }
+        catch (Exception e) {
             e.printStackTrace();
             EmailValidationResponseDto res = EmailValidationResponseDto.builder()
                     .status(500)
