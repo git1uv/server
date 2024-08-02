@@ -1,9 +1,12 @@
 package com.simter.domain.member.controller;
 
+import com.simter.domain.member.dto.JwtTokenDto;
+import com.simter.domain.member.dto.LoginDto;
 import com.simter.domain.member.dto.MemberRequestDto.EmailValidationRequestDto;
 import com.simter.domain.member.dto.MemberRequestDto.RegisterRequestDto;
 import com.simter.domain.member.dto.MemberResponseDto.BasicResponseDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
+import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
 import com.simter.domain.member.exception.InvalidEmailFormatException;
 import com.simter.domain.member.exception.InvalidNicknameFormatException;
 import com.simter.domain.member.exception.InvalidPasswordFormatException;
@@ -80,6 +83,19 @@ public class MemberController {
                     .build();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         }
+    }
+
+    @PostMapping("/api/v1/login/general")
+    public ResponseEntity<LoginResponseDto> signIn(@RequestBody LoginDto loginDto) {
+        String email = loginDto.getEmail();
+        String password = loginDto.getPassword();
+        String token = memberService.login(email, password);
+        LoginResponseDto res = LoginResponseDto.builder()
+            .status(200)
+            .message("로그인 성공")
+            .token(token)
+            .build();
+        return ResponseEntity.status(200).body(res);
     }
 }
 

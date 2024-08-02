@@ -26,4 +26,14 @@ public class MemberResponseDto {
         private int status;
         private String message;
     }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class LoginResponseDto {
+        private int status;
+        private String message;
+        private String token;
+    }
 }
