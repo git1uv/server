@@ -1,5 +1,6 @@
 package com.simter.domain.member.controller;
 
+import com.simter.config.JwtTokenProvider;
 import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.dto.LoginDto;
 import com.simter.domain.member.dto.MemberRequestDto.EmailValidationRequestDto;
@@ -11,19 +12,27 @@ import com.simter.domain.member.exception.InvalidEmailFormatException;
 import com.simter.domain.member.exception.InvalidNicknameFormatException;
 import com.simter.domain.member.exception.InvalidPasswordFormatException;
 import com.simter.domain.member.service.MemberService;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
 
 @RequiredArgsConstructor
 @Controller
 public class MemberController {
 
     private final MemberService memberService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/api/v1/register/general")
     public ResponseEntity<BasicResponseDto> register(@RequestBody RegisterRequestDto registerRequestDto) {
@@ -86,7 +95,7 @@ public class MemberController {
     }
 
     @PostMapping("/api/v1/login/general")
-    public ResponseEntity<LoginResponseDto> signIn(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginDto loginDto) {
         String email = loginDto.getEmail();
         String password = loginDto.getPassword();
         String token = memberService.login(email, password);
@@ -95,7 +104,7 @@ public class MemberController {
             .message("로그인 성공")
             .token(token)
             .build();
-        return ResponseEntity.status(200).body(res);
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 }
 

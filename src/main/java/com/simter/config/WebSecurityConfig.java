@@ -1,5 +1,6 @@
 package com.simter.config;
 
+import com.simter.domain.member.service.OAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -21,6 +23,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class WebSecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final OAuth2UserService oAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public BCryptPasswordEncoder encoder() {
@@ -32,7 +36,9 @@ public class WebSecurityConfig {
         return (web) -> web.ignoring()
             .requestMatchers(new AntPathRequestMatcher("/api/v1/**"))
             .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**"))
-            .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html"));
+            .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html"))
+            .requestMatchers(new AntPathRequestMatcher("/error"))
+            .requestMatchers(new AntPathRequestMatcher("/favicon.ico"));
     }
 
     @Bean
@@ -40,6 +46,10 @@ public class WebSecurityConfig {
 
         http
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .sessionManagement(c ->
+                c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(requests -> requests
                 .requestMatchers("/", "/api/v1/login/general", "/api/v1/register/general").permitAll()
                 .anyRequest().authenticated()
@@ -48,6 +58,10 @@ public class WebSecurityConfig {
                 .loginPage("/api/v1/login/general")
                 .defaultSuccessUrl("api/v1/main", true)
                 .permitAll()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
+                    .successHandler(oAuth2SuccessHandler)
             )
             .logout(LogoutConfigurer::permitAll)
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class).build();

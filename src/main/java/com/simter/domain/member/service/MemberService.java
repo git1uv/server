@@ -8,6 +8,7 @@ import com.simter.domain.member.dto.MemberRequestDto.RegisterRequestDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.exception.InvalidEmailFormatException;
+import com.simter.domain.member.exception.InvalidLoginException;
 import com.simter.domain.member.exception.InvalidNicknameFormatException;
 import com.simter.domain.member.exception.InvalidPasswordFormatException;
 import com.simter.domain.member.repository.MemberRepository;
@@ -23,11 +24,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class MemberService {
+public class MemberService extends DefaultOAuth2UserService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder encoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -50,17 +55,26 @@ public class MemberService {
 
     @Transactional
     public String login(String email, String password) {
-        UsernamePasswordAuthenticationToken token
-            = new UsernamePasswordAuthenticationToken(email, password);
-        Authentication authentication
-            = authenticationManagerBuilder.getObject().authenticate(token);
+        Optional<Member> user = memberRepository.findByEmail(email);
+        if (user.isPresent()) {
+            if (!encoder.matches(password, user.get().getPassword())) {
+                throw new InvalidLoginException();
+            } else {
+                UsernamePasswordAuthenticationToken token
+                    = new UsernamePasswordAuthenticationToken(email, password);
+                Authentication authentication
+                    = authenticationManagerBuilder.getObject().authenticate(token);
 
-        JwtTokenDto jwtToken =  jwtTokenProvider.generateToken(authentication);
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.writeValueAsString(jwtToken);
-        } catch (Exception e) {
-            throw new RuntimeException("토큰 JSON 변환 중 오류", e);
+                JwtTokenDto jwtToken =  jwtTokenProvider.generateToken(authentication,email);
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    return objectMapper.writeValueAsString(jwtToken);
+                } catch (Exception e) {
+                    throw new RuntimeException("토큰 JSON 변환 중 오류", e);
+                }
+            }
+        } else {
+            throw new InvalidLoginException();
         }
     }
 

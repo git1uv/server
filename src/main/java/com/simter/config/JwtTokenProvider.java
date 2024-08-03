@@ -37,16 +37,21 @@ public class JwtTokenProvider {
         this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     }
 
-    public JwtTokenDto generateToken(Authentication authentication) {
-        String authorities = authentication.getAuthorities().toString();
+    public JwtTokenDto generateToken(Authentication authentication, String email) {
 
         long currentTime = (new Date()).getTime();
 
         Date accessTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 3));
         Date refreshTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 24));
 
+        Claims claims = Jwts.claims().setSubject(authentication.getName());
+        claims.put(AUTHORITIES_KEY, authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+        claims.put("email", email);
+
         String accessToken = Jwts.builder()
-            .setSubject(authentication.getName())
+            .setClaims(claims)
+            .setIssuedAt(new Date(currentTime))
             .setExpiration(accessTokenExpirationTime)
             .signWith(secretKey)
             .compact();
@@ -60,14 +65,12 @@ public class JwtTokenProvider {
             .grantType("Bearer")
             .accessToken(accessToken)
             .refreshToken(refreshToken)
-            .authority("ROLE_USER")
             .build();
 
     }
 
     public Authentication getAuthentication(String accessToken) {
-        Claims claims = Jwts
-            .parserBuilder()
+        Claims claims = Jwts.parserBuilder()
             .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(accessToken)
@@ -101,5 +104,14 @@ public class JwtTokenProvider {
             log.info("JWT 토큰이 잘못되었습니다.");
         }
         return false;
+    }
+
+    public Claims getClaims(String token) {
+        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+    }
+
+    public String getEmail(String token) {
+        Claims claims = getClaims(token);
+        return claims.get("email", String.class);
     }
 }

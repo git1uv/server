@@ -12,3 +12,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${OAUTH_ID}
+            client-secret: ${OAUTH_PW}
+            scope: profile, email

@@ -22,6 +22,9 @@ public class MemberRequestDto {
 
         @NotNull
         private String nickname;
+
+        @NotNull
+        private String loginType;
     }
 
     @Builder

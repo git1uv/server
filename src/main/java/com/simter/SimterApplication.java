@@ -15,6 +15,8 @@ public class SimterApplication {
         System.setProperty("DB_PORT", dotenv.get("DB_PORT"));
         System.setProperty("DB_USER", dotenv.get("DB_USER"));
         System.setProperty("DB_PW", dotenv.get("DB_PW"));
+        System.setProperty("OAUTH_ID", dotenv.get("OAUTH_ID"));
+        System.setProperty("OAUTH_PW", dotenv.get("OAUTH_PW"));
         SpringApplication.run(SimterApplication.class, args);
     }
 }
