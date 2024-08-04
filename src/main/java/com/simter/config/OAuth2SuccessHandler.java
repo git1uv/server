@@ -1,6 +1,7 @@
 package com.simter.config;
 
 import com.simter.domain.member.dto.JwtTokenDto;
+import com.simter.domain.member.repository.MemberRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     JwtTokenProvider jwtTokenProvider;
+    MemberRepository memberRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -24,15 +26,17 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = (String) oAuth2User.getAttributes().get("email");
         JwtTokenDto jwtToken = jwtTokenProvider.generateToken(authentication, email);
-
         String token = jwtToken.getAccessToken();
-
-        String redirectUrl = UriComponentsBuilder.fromUriString("/signup/nickname")
-            .queryParam("token", token)
-            .queryParam("email", email)
-            .queryParam("loginType", "google")
-            .build().toUriString();
-
+        String redirectUrl;
+        if (memberRepository.existsByEmail(email)) {
+            redirectUrl = "/api/v1/main";
+        } else {
+            redirectUrl = UriComponentsBuilder.fromUriString("/api/v1/signup/nickname")
+                .queryParam("token", token)
+                .queryParam("email", email)
+                .queryParam("loginType", "google")
+                .build().toUriString();
+        }
         response.sendRedirect(redirectUrl);
     }
 }

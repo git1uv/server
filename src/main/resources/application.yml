@@ -21,3 +21,6 @@ spring:
             client-id: ${OAUTH_ID}
             client-secret: ${OAUTH_PW}
             scope: profile, email
+          kakao:
+            client_id: ${KAKAO_ID}
+            redirect_uri: ${KAKAO_URI}
