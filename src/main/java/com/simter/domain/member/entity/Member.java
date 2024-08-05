@@ -89,4 +89,8 @@ public class Member implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public void setHasAirplane(Boolean hasAirplane) {
+        this.hasAirplane = hasAirplane;
+    }
 }
