@@ -23,16 +23,16 @@ public class AirplaneController {
 
     // 종이비행기 작성 API (POST)
     @PostMapping("/airplane")
-    public ResponseEntity<ApiResponse<AirplanePostResponseDto>> sendAirplane(@RequestBody AirplanePostRequestDto requestDto) {
-            AirplanePostResponseDto response = airplaneService.sendAirplane(requestDto);
-            return ResponseEntity.ok(ApiResponse.onSuccess(response));
+    public ApiResponse<AirplanePostResponseDto> sendAirplane(@RequestBody AirplanePostRequestDto requestDto) {
+        airplaneService.sendAirplane(requestDto);
+        return ApiResponse.onSuccess(null);
     }
 
     // 종이비행기 조회 API (GET)
     @GetMapping("/airplane/{receiverId}")
-    public ResponseEntity<ApiResponse<AirplaneGetResponseDto>> getAirplane(@PathVariable Long receiverId) {
+    public ApiResponse<AirplaneGetResponseDto> getAirplane(@PathVariable Long receiverId) {
 
         AirplaneGetResponseDto response = airplaneService.getAirplane(receiverId);
-        return ResponseEntity.ok(ApiResponse.onSuccess(response));
+        return ApiResponse.onSuccess(response);
     }
 }

@@ -1,5 +1,6 @@
 package com.simter.domain.airplane.service;
 
+import com.simter.apiPayload.ApiResponse;
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.domain.airplane.converter.AirplaneConverter;
@@ -50,19 +51,14 @@ public class AirplaneService {
 
         randomReceiver.setHasAirplane(true);
         memberRepository.save(randomReceiver);
-
-        return new AirplanePostResponseDto("종이 비행기 보내기 성공");
     }
 
 
     public AirplaneGetResponseDto getAirplane(Long receiverId) {
-        Optional<Airplane> airplaneOpt = airplaneRepository.findFirstByReceiverId_IdOrderByCreatedAtDesc(receiverId);
-
-        if (airplaneOpt.isPresent()) {
-            Airplane airplane = airplaneOpt.get();
-            return AirplaneConverter.convertToDataDto(airplane);
-        } else {
-            throw new ErrorHandler(ErrorStatus.AIRPLANE_NOT_FOUND);
-        }
+        Airplane airplaneOpt =
+                airplaneRepository.findFirstByReceiverId_IdOrderByCreatedAtDesc(receiverId)
+                        .orElseThrow(() -> new ErrorHandler(ErrorStatus.AIRPLANE_NOT_FOUND));
+        return AirplaneConverter.convertToDataDto(airplaneOpt);
     }
+
 }
