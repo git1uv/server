@@ -64,8 +64,7 @@ public class AirplaneService {
 
         if (airplaneOpt.isPresent()) {
             Airplane airplane = airplaneOpt.get();
-            AirplaneGetResponseDto.DataDto data = AirplaneConverter.convertToDataDto(airplane);
-            return new AirplaneGetResponseDto("종이 비행기 불러오기 성공", data);
+            return AirplaneConverter.convertToDataDto(airplane);
         } else {
             throw new AirplaneGetException("종이 비행기가 없습니다.");
         }
