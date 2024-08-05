@@ -1,5 +1,6 @@
 package com.simter.domain.airplane.service;
 
+import com.simter.domain.airplane.converter.AirplaneConverter;
 import com.simter.domain.airplane.dto.AirplaneGetResponseDto;
 import com.simter.domain.airplane.dto.AirplanePostRequestDto;
 import com.simter.domain.airplane.dto.AirplanePostResponseDto;
@@ -63,12 +64,7 @@ public class AirplaneService {
 
         if (airplaneOpt.isPresent()) {
             Airplane airplane = airplaneOpt.get();
-            AirplaneGetResponseDto.DataDto data = new AirplaneGetResponseDto.DataDto(
-                    airplane.getWriterName(),
-                    airplane.getContent(),
-                    airplane.getCreatedAt().toLocalDate()
-            );
-
+            AirplaneGetResponseDto.DataDto data = AirplaneConverter.convertToDataDto(airplane);
             return new AirplaneGetResponseDto("종이 비행기 불러오기 성공", data);
         } else {
             throw new AirplaneGetException("종이 비행기가 없습니다.");
