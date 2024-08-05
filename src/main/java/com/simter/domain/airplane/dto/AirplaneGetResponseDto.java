@@ -20,7 +20,7 @@ public class AirplaneGetResponseDto {
         private String writerName;
         private String content;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        private LocalDate createdAt;  // LocalDate로 변경
+        private LocalDate createdAt;
     }
 
 }

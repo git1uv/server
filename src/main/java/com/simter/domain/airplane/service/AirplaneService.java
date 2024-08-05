@@ -30,8 +30,17 @@ public class AirplaneService {
             throw new AirplanePostException("사용자가 존재하지 않습니다.");
         }
 
+        //has_airplane이 false인 사용자만 필터링
+        List<Member> availableMembers = members.stream()
+                .filter(member -> !member.getHasAirplane())
+                .toList();
+
+        if (availableMembers.isEmpty()) {
+            throw new AirplanePostException("종이 비행기를 보낼 수 있는 사용자가 없습니다.");
+        }
+
         Random random = new Random();
-        Member randomReceiver = members.get(random.nextInt(members.size()));
+        Member randomReceiver = availableMembers.get(random.nextInt(availableMembers.size()));
 
         Airplane airplane = Airplane.builder()
                 .writerName(requestDto.getWriterName())
@@ -42,6 +51,9 @@ public class AirplaneService {
                 .build();
 
         airplaneRepository.save(airplane);
+
+        randomReceiver.setHasAirplane(true);
+        memberRepository.save(randomReceiver);
 
         return new AirplanePostResponseDto("종이 비행기 보내기 성공");
     }
