@@ -10,17 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AirplaneGetResponseDto {
-    private String message;
-    private DataDto data;
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DataDto {
         private String writerName;
         private String content;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         private LocalDate createdAt;
-    }
+
 
 }
