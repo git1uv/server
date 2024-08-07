@@ -45,7 +45,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
+        return http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
@@ -57,7 +57,7 @@ public class WebSecurityConfig {
             )
             .formLogin(form -> form
                 .loginPage("/api/v1/login/general")
-                .defaultSuccessUrl("api/v1/main", true)
+                .defaultSuccessUrl("/api/v1/main", true)
                 .permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -66,7 +66,6 @@ public class WebSecurityConfig {
             )
             .logout(LogoutConfigurer::permitAll)
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class).build();
-        return http.build();
     }
 
     @Bean
