@@ -26,7 +26,7 @@ public class AirplaneService {
     private final AirplaneRepository airplaneRepository;
     private final MemberRepository memberRepository;
 
-    public AirplanePostResponseDto sendAirplane(AirplanePostRequestDto requestDto) {
+    public void sendAirplane(AirplanePostRequestDto requestDto) {
         // 사용자가 있는지 먼저 확인
         List<Member> availableMembers = memberRepository.findAll().stream()
                 .filter(member -> !member.getHasAirplane())
