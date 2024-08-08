@@ -1,6 +1,5 @@
 package com.simter.domain.member.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simter.config.JwtTokenProvider;
 import com.simter.domain.member.converter.MemberConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
@@ -16,6 +15,7 @@ import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 public class MemberService extends DefaultOAuth2UserService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder encoder;
+    private final AuthenticationManager authenticationManager;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -39,17 +40,17 @@ public class MemberService extends DefaultOAuth2UserService {
         validateRegister(email, password, nickname);
         String encryptedPassword = encoder.encode(password);
         RegisterRequestDto newRegisterRequestDto = RegisterRequestDto.builder()
-                .email(email)
-                .password(encryptedPassword)
-                .nickname(nickname)
-                .loginType(loginType)
-                .build();
+            .email(email)
+            .password(encryptedPassword)
+            .nickname(nickname)
+            .loginType(loginType)
+            .build();
         Member member = MemberConverter.convertToEntity(newRegisterRequestDto);
         memberRepository.save(member);
     }
 
     @Transactional
-    public String login(String email, String password) {
+    public JwtTokenDto login(String email, String password) {
         Optional<Member> user = memberRepository.findByEmail(email);
         if (user.isPresent()) {
             if (!encoder.matches(password, user.get().getPassword())) {
@@ -58,15 +59,9 @@ public class MemberService extends DefaultOAuth2UserService {
                 UsernamePasswordAuthenticationToken token
                     = new UsernamePasswordAuthenticationToken(email, password);
                 Authentication authentication
-                    = authenticationManagerBuilder.getObject().authenticate(token);
+                    = authenticationManager.authenticate(token);
+                return jwtTokenProvider.generateToken(authentication, email);
 
-                JwtTokenDto jwtToken =  jwtTokenProvider.generateToken(authentication, email);
-                ObjectMapper objectMapper = new ObjectMapper();
-                try {
-                    return objectMapper.writeValueAsString(jwtToken);
-                } catch (Exception e) {
-                    throw new RuntimeException("토큰 JSON 변환 중 오류", e);
-                }
             }
         } else {
             throw new InvalidLoginException();
@@ -83,16 +78,16 @@ public class MemberService extends DefaultOAuth2UserService {
         Optional<Member> findMember = memberRepository.findByEmail(email);
         if (findMember.isEmpty()) {
             return EmailValidationResponseDto.builder()
-                    .status(200)
-                    .message("사용할 수 있는 이메일입니다.")
-                    .isValid(true)
-                    .build();
+                .status(200)
+                .message("사용할 수 있는 이메일입니다.")
+                .isValid(true)
+                .build();
         } else {
             return EmailValidationResponseDto.builder()
-                    .status(200)
-                    .message("사용할 수 없는 이메일입니다.")
-                    .isValid(false)
-                    .build();
+                .status(200)
+                .message("사용할 수 없는 이메일입니다.")
+                .isValid(false)
+                .build();
         }
     }
 

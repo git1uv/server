@@ -99,7 +99,7 @@ public class MemberController {
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginDto loginDto) {
         String email = loginDto.getEmail();
         String password = loginDto.getPassword();
-        String token = memberService.login(email, password);
+        JwtTokenDto token = memberService.login(email, password);
         LoginResponseDto res = LoginResponseDto.builder()
             .status(200)
             .message("로그인 성공")

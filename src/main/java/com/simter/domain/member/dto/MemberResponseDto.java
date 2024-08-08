@@ -34,6 +34,6 @@ public class MemberResponseDto {
     public static class LoginResponseDto {
         private int status;
         private String message;
-        private String token;
+        private JwtTokenDto token;
     }
 }
