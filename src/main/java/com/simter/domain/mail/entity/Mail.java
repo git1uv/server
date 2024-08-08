@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Mail {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="mail_id")
@@ -30,21 +31,26 @@ public class Mail {
     @Column(nullable = false, length = 100)
     private String chatbotType;
 
-    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(updatable = false)
     private LocalDateTime deletedAt;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean isRead;
+    private Boolean isRead = false;
+
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private Boolean isDeleted;
+    private Boolean isStared = false;
 
+    public void setIsStared(Boolean isStared) {
+        this.isStared = isStared;
+    }
 
-
-
+    public void markAsDeleted() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
 }

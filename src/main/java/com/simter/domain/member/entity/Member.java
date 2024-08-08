@@ -91,4 +91,8 @@ public class Member implements UserDetails {
     public void setHasAirplane(Boolean hasAirplane) {
         this.hasAirplane = hasAirplane;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
