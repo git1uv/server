@@ -9,6 +9,7 @@ import com.simter.domain.mail.entity.Mail;
 import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,11 @@ public class MailService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
+
         List<Mail> mails = mailRepository.findByMemberAndIsDeletedFalse(member);
+        if (mails.isEmpty()) {
+            throw new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND); // 새로운 에러 상태를 정의할 수도 있습니다.
+        }
         return mailConverter.convertToMailGetResponseDto(mails);
     }
 
@@ -48,15 +53,16 @@ public class MailService {
         mailRepository.save(mail);
     }
 
-    //특정 편지 삭제
-    public void deleteMail(Long mailId) {
-        Mail mail = mailRepository.findById(mailId)
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
-        mail.markAsDeleted();
-        mailRepository.save(mail);
+    //편지 삭제
+    @Transactional
+    public void deleteMails(List<Long> mailIds) {
+        for (Long mailId : mailIds) {
+            Mail mail = mailRepository.findById(mailId)
+                    .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
+            mail.markAsDeleted();
+            mailRepository.save(mail);
+        }
     }
-
-
 
 
 

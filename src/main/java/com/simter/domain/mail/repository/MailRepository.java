@@ -11,10 +11,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MailRepository extends JpaRepository<Mail, Long> {
 
-    // 특정 사용자의 삭제되지 않은 메일 조회
+    // 특정 사용자의 삭제되지 않은 편지 조회
     List<Mail> findByMemberAndIsDeletedFalse(Member member);
 
-    // 특정 사용자의 즐겨찾기 한 메일 조회
+    // 특정 사용자의 즐겨찾기 한 편지 조회
     List<Mail> findByMemberAndIsStaredTrue(Member member);
 
     Optional<Mail> findById(Long id);
