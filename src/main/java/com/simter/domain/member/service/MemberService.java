@@ -29,6 +29,7 @@ public class MemberService extends DefaultOAuth2UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
+    //회원가입
     public void register(RegisterDto registerRequestDto) {
         String email = registerRequestDto.getEmail();
         String password = registerRequestDto.getPassword();
@@ -46,6 +47,7 @@ public class MemberService extends DefaultOAuth2UserService {
         memberRepository.save(member);
     }
 
+    //로그인
     @Transactional
     public LoginResponseDto login(String email, String password) {
         Optional<Member> user = memberRepository.findByEmail(email);
@@ -68,12 +70,14 @@ public class MemberService extends DefaultOAuth2UserService {
         }
     }
 
+    //닉네임, 비밀번호, 이메일 유효 검증
     public void validateRegister(String email, String password, String nickname) {
         validateEmail(email);
         validatePassword(password);
         validateNickname(nickname);
     }
 
+    //이메일 중복 조회
     public EmailValidationResponseDto validateDuplicate(String email) {
         Optional<Member> findMember = memberRepository.findByEmail(email);
         if (findMember.isEmpty()) {
@@ -87,18 +91,21 @@ public class MemberService extends DefaultOAuth2UserService {
         }
     }
 
+    //이메일 형식 확인
     public void validateEmail(String email) {
         if (!Pattern.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$", email)) {
             throw new ErrorHandler(ErrorStatus.INVALID_EMAIL_FORMAT);
         }
     }
 
+    //비밀번호 형식 확인
     public void validatePassword(String password) {
         if (!Pattern.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,16}$", password)) {
             throw new ErrorHandler(ErrorStatus.INVALID_PASSWORD_FORMAT);
         }
     }
 
+    //닉네임 형식 확인
     public void validateNickname(String nickname) {
         if (!Pattern.matches("^[가-힣a-zA-Z]{1,10}$", nickname)) {
             throw new ErrorHandler(ErrorStatus.INVALID_NICKNAME_FORMAT);
