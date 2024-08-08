@@ -39,7 +39,7 @@ public enum ErrorStatus implements BaseCode {
     AIRPLANE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAPER_AIRPLANE4001", "종이비행기가 없습니다."),
 
     //메일 관련 에러
-    MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "메일이 없습니다.");
+    MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "편지이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
