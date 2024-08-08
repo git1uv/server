@@ -1,30 +1,21 @@
 package com.simter.domain.member.controller;
 
+import com.simter.apiPayload.ApiResponse;
 import com.simter.config.JwtTokenProvider;
 import com.simter.domain.member.dto.JwtTokenDto;
-import com.simter.domain.member.dto.LoginDto;
 import com.simter.domain.member.dto.MemberRequestDto.EmailValidationRequestDto;
-import com.simter.domain.member.dto.MemberRequestDto.RegisterRequestDto;
-import com.simter.domain.member.dto.MemberResponseDto.BasicResponseDto;
+import com.simter.domain.member.dto.MemberRequestDto.LoginRequestDto;
+import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
 import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
-import com.simter.domain.member.exception.InvalidEmailFormatException;
-import com.simter.domain.member.exception.InvalidNicknameFormatException;
-import com.simter.domain.member.exception.InvalidPasswordFormatException;
 import com.simter.domain.member.service.MemberService;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -35,77 +26,28 @@ public class MemberController {
     private final MemberService memberService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Operation(summary = "회원가입 API", description = "이메일, 로그인 타입, 비밀번호, 닉네임을 저장해 회원가입하는 API")
     @PostMapping("/api/v1/register/general")
-    public ResponseEntity<BasicResponseDto> register(@RequestBody RegisterRequestDto registerRequestDto) {
-        try {
-            memberService.register(registerRequestDto);
-            BasicResponseDto res = BasicResponseDto.builder()
-                    .status(201)
-                    .message("회원가입 성공")
-                    .build();
-            return ResponseEntity.status(HttpStatus.CREATED).body(res);
-        }
-        catch (InvalidEmailFormatException e) {
-            BasicResponseDto res = BasicResponseDto.builder()
-                    .status(403)
-                    .message(e.getMessage())
-                    .build();
-            return ResponseEntity.status(403).body(res);
-        }
-        catch (InvalidPasswordFormatException e) {
-            BasicResponseDto res = BasicResponseDto.builder()
-                    .status(403)
-                    .message(e.getMessage())
-                    .build();
-            return ResponseEntity.status(403).body(res);
-        }
-        catch (InvalidNicknameFormatException e) {
-            BasicResponseDto res = BasicResponseDto.builder()
-                    .status(403)
-                    .message(e.getMessage())
-                    .build();
-            return ResponseEntity.status(403).body(res);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            BasicResponseDto res = BasicResponseDto.builder()
-                    .status(500)
-                    .message("회원가입 실패")
-                    .build();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-        }
+    public ApiResponse<Void> register(@RequestBody RegisterDto registerDto) {
+        memberService.register(registerDto);
+        return ApiResponse.onSuccess(null);
     }
 
+    @Operation(summary = "이메일 중복체크 API", description = "이메일이 이미 가입되어 있는지 조회하는 API")
     @GetMapping("/api/v1/register/general/check")
-    public ResponseEntity<EmailValidationResponseDto> checkRegister(@RequestBody EmailValidationRequestDto emailValidationRequestDto) {
-        try {
-            EmailValidationResponseDto res = memberService.validateDuplicate(
-                    emailValidationRequestDto.getEmail());
-
-            return ResponseEntity.status(HttpStatus.OK).body(res);
-            }
-        catch (Exception e) {
-            e.printStackTrace();
-            EmailValidationResponseDto res = EmailValidationResponseDto.builder()
-                    .status(500)
-                    .message("이메일 중복 조회 실패")
-                    .isValid(false)
-                    .build();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-        }
+    public ApiResponse<EmailValidationResponseDto> checkRegister(@RequestBody EmailValidationRequestDto emailValidationRequestDto) {
+        EmailValidationResponseDto emailValidationResponseDto = memberService.validateDuplicate(
+            emailValidationRequestDto.getEmail());
+        return ApiResponse.onSuccess(emailValidationResponseDto);
     }
 
+    @Operation(summary = "일반 로그인 API", description = "이메일, 비밀번호를 입력하여 토큰을 생성하는 API")
     @PostMapping("/api/v1/login/general")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginDto loginDto) {
+    public ApiResponse<LoginResponseDto> login(@RequestBody LoginRequestDto loginDto) {
         String email = loginDto.getEmail();
         String password = loginDto.getPassword();
-        JwtTokenDto token = memberService.login(email, password);
-        LoginResponseDto res = LoginResponseDto.builder()
-            .status(200)
-            .message("로그인 성공")
-            .token(token)
-            .build();
-        return ResponseEntity.status(HttpStatus.OK).body(res);
+        LoginResponseDto loginResponseDto = memberService.login(email, password);
+        return ApiResponse.onSuccess(loginResponseDto);
     }
 }
 

@@ -1,15 +1,14 @@
 package com.simter.domain.member.service;
 
+import com.simter.apiPayload.code.status.ErrorStatus;
+import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.config.JwtTokenProvider;
 import com.simter.domain.member.converter.MemberConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
-import com.simter.domain.member.dto.MemberRequestDto.RegisterRequestDto;
+import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
+import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
 import com.simter.domain.member.entity.Member;
-import com.simter.domain.member.exception.InvalidEmailFormatException;
-import com.simter.domain.member.exception.InvalidLoginException;
-import com.simter.domain.member.exception.InvalidNicknameFormatException;
-import com.simter.domain.member.exception.InvalidPasswordFormatException;
 import com.simter.domain.member.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import java.util.Optional;
@@ -32,39 +31,42 @@ public class MemberService extends DefaultOAuth2UserService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public void register(RegisterRequestDto registerRequestDto) {
+    public void register(RegisterDto registerRequestDto) {
         String email = registerRequestDto.getEmail();
         String password = registerRequestDto.getPassword();
         String nickname = registerRequestDto.getNickname();
         String loginType = registerRequestDto.getLoginType();
         validateRegister(email, password, nickname);
         String encryptedPassword = encoder.encode(password);
-        RegisterRequestDto newRegisterRequestDto = RegisterRequestDto.builder()
+        RegisterDto newRegisterDto = RegisterDto.builder()
             .email(email)
             .password(encryptedPassword)
             .nickname(nickname)
             .loginType(loginType)
             .build();
-        Member member = MemberConverter.convertToEntity(newRegisterRequestDto);
+        Member member = MemberConverter.convertToEntity(newRegisterDto);
         memberRepository.save(member);
     }
 
     @Transactional
-    public JwtTokenDto login(String email, String password) {
+    public LoginResponseDto login(String email, String password) {
         Optional<Member> user = memberRepository.findByEmail(email);
         if (user.isPresent()) {
             if (!encoder.matches(password, user.get().getPassword())) {
-                throw new InvalidLoginException();
+                throw new ErrorHandler(ErrorStatus.INVALID_NICKNAME_FORMAT);
             } else {
                 UsernamePasswordAuthenticationToken token
                     = new UsernamePasswordAuthenticationToken(email, password);
                 Authentication authentication
                     = authenticationManager.authenticate(token);
-                return jwtTokenProvider.generateToken(authentication, email);
+                JwtTokenDto jwtToken = jwtTokenProvider.generateToken(authentication, email);
 
+                return LoginResponseDto.builder()
+                    .token(jwtToken)
+                    .build();
             }
         } else {
-            throw new InvalidLoginException();
+            throw new ErrorHandler(ErrorStatus.INVALID_NICKNAME_FORMAT);
         }
     }
 
@@ -78,14 +80,10 @@ public class MemberService extends DefaultOAuth2UserService {
         Optional<Member> findMember = memberRepository.findByEmail(email);
         if (findMember.isEmpty()) {
             return EmailValidationResponseDto.builder()
-                .status(200)
-                .message("사용할 수 있는 이메일입니다.")
                 .isValid(true)
                 .build();
         } else {
             return EmailValidationResponseDto.builder()
-                .status(200)
-                .message("사용할 수 없는 이메일입니다.")
                 .isValid(false)
                 .build();
         }
@@ -93,19 +91,19 @@ public class MemberService extends DefaultOAuth2UserService {
 
     public void validateEmail(String email) {
         if (!Pattern.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$", email)) {
-            throw new InvalidEmailFormatException();
+            throw new ErrorHandler(ErrorStatus.INVALID_EMAIL_FORMAT);
         }
     }
 
     public void validatePassword(String password) {
         if (!Pattern.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,16}$", password)) {
-            throw new InvalidPasswordFormatException();
+            throw new ErrorHandler(ErrorStatus.INVALID_PASSWORD_FORMAT);
         }
     }
 
     public void validateNickname(String nickname) {
         if (!Pattern.matches("^[가-힣a-zA-Z]{1,10}$", nickname)) {
-            throw new InvalidNicknameFormatException();
+            throw new ErrorHandler(ErrorStatus.INVALID_NICKNAME_FORMAT);
         }
     }
 

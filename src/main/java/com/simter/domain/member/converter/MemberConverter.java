@@ -1,18 +1,18 @@
 package com.simter.domain.member.converter;
 
 import com.simter.domain.member.dto.JwtTokenDto;
-import com.simter.domain.member.dto.MemberRequestDto.RegisterRequestDto;
+import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
 import com.simter.domain.member.entity.Member;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MemberConverter {
 
-    public static Member convertToEntity(RegisterRequestDto registerRequestDto) {
+    public static Member convertToEntity(RegisterDto registerDto) {
         return Member.builder()
-                .email(registerRequestDto.getEmail())
-                .password(registerRequestDto.getPassword())
-                .nickname(registerRequestDto.getNickname())
+                .email(registerDto.getEmail())
+                .password(registerDto.getPassword())
+                .nickname(registerDto.getNickname())
                 .loginType("general")
                 .build();
     }
