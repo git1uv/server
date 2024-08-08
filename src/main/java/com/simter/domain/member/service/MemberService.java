@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -28,7 +27,6 @@ public class MemberService extends DefaultOAuth2UserService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
 
     public void register(RegisterDto registerRequestDto) {
@@ -53,7 +51,7 @@ public class MemberService extends DefaultOAuth2UserService {
         Optional<Member> user = memberRepository.findByEmail(email);
         if (user.isPresent()) {
             if (!encoder.matches(password, user.get().getPassword())) {
-                throw new ErrorHandler(ErrorStatus.INVALID_NICKNAME_FORMAT);
+                throw new ErrorHandler(ErrorStatus.INVALID_LOGIN);
             } else {
                 UsernamePasswordAuthenticationToken token
                     = new UsernamePasswordAuthenticationToken(email, password);
@@ -66,7 +64,7 @@ public class MemberService extends DefaultOAuth2UserService {
                     .build();
             }
         } else {
-            throw new ErrorHandler(ErrorStatus.INVALID_NICKNAME_FORMAT);
+            throw new ErrorHandler(ErrorStatus.INVALID_LOGIN);
         }
     }
 
