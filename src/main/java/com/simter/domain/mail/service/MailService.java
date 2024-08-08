@@ -9,6 +9,7 @@ import com.simter.domain.mail.entity.Mail;
 import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,22 @@ public class MailService {
 
         List<Mail> mails = mailRepository.findByMemberAndIsStaredTrue(member);
         return mailConverter.convertToMailGetResponseDto(mails);
+    }
+
+    //특정 메일의 즐겨찾기 여부 변경
+    public void changeStared(Long mailId) {
+        Mail mail = mailRepository.findById(mailId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
+        mail.setIsStared(!mail.getIsStared());
+        mailRepository.save(mail);
+    }
+
+    //특정 편지 삭제
+    public void deleteMail(Long mailId) {
+        Mail mail = mailRepository.findById(mailId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
+        mail.markAsDeleted();
+        mailRepository.save(mail);
     }
 
 

@@ -31,10 +31,8 @@ public class Mail {
     @Column(nullable = false, length = 100)
     private String chatbotType;
 
-    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(updatable = false)
     private LocalDateTime deletedAt;
 
     @Column(nullable = false)
@@ -47,6 +45,12 @@ public class Mail {
     @ColumnDefault("false")
     private Boolean isStared = false;
 
+    public void setIsStared(Boolean isStared) {
+        this.isStared = isStared;
+    }
 
-
+    public void markAsDeleted() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
 }

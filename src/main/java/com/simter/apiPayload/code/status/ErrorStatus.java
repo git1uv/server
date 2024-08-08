@@ -32,8 +32,10 @@ public enum ErrorStatus implements BaseCode {
     NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임은 필수 입니다."),
 
     //종이비행기 관련 에러
-    AIRPLANE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAPER_AIRPLANE4001", "종이비행기가 없습니다.");
+    AIRPLANE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAPER_AIRPLANE4001", "종이비행기가 없습니다."),
 
+    //메일 관련 에러
+    MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "메일이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
