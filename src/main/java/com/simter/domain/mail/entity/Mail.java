@@ -37,13 +37,10 @@ public class Mail {
     private LocalDateTime deletedAt;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean isRead;
+    private Boolean isRead = false;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean isDeleted;
-
+    private Boolean isDeleted = false;;
 
 
 
