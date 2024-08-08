@@ -83,7 +83,7 @@ CREATE TABLE `calendars` (
 );
 
 CREATE TABLE `calendar_solution` (
-                                     `calendar_id`	bigint	NOT NULL
+                                     `calendar_id`	bigint	NOT NULL,
                                      `solution_id`	bigint	NOT NULL,
                                      PRIMARY KEY (`calendar_id`, `solution_id`),
                                      FOREIGN KEY (`calendar_id`) REFERENCES `calendars` (`calendar_id`),

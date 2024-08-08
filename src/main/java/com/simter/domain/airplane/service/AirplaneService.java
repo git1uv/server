@@ -29,7 +29,7 @@ public class AirplaneService {
     public void sendAirplane(AirplanePostRequestDto requestDto) {
         // 사용자가 있는지 먼저 확인
         List<Member> availableMembers = memberRepository.findAll().stream()
-                .filter(member -> !member.getHasAirplane())
+                .filter(member -> !member.isHasAirplane())
                 .toList();
 
         if (availableMembers.isEmpty()) {
