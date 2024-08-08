@@ -32,7 +32,7 @@ public class AirplaneService {
         if (availableMembers.isEmpty()) {
             throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
         }
-
+      
         // 무작위로 사용자 선택
         Member randomReceiver = availableMembers.get(new Random().nextInt(availableMembers.size()));
 

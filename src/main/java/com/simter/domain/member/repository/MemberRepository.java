@@ -12,4 +12,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAllByHasAirplane(Boolean hasAirplane);
 
     Optional<Member> findById(Long id);
+
 }
