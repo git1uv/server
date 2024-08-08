@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Mail {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="mail_id")
@@ -40,7 +41,11 @@ public class Mail {
     private Boolean isRead = false;
 
     @Column(nullable = false)
-    private Boolean isDeleted = false;;
+    private Boolean isDeleted = false;
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isStared = false;
 
 
 

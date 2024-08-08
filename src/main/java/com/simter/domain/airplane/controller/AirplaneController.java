@@ -37,7 +37,6 @@ public class AirplaneController {
     @Operation(summary = "종이비행기 조회 API", description = "종이비행기를 조회하는 API")
     @GetMapping("/airplane/{receiverId}")
     public ApiResponse<AirplaneGetResponseDto> getAirplane(@PathVariable Long receiverId) {
-
         AirplaneGetResponseDto response = airplaneService.getAirplane(receiverId);
         return ApiResponse.onSuccess(response);
     }
