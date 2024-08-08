@@ -70,6 +70,19 @@ public class MemberService extends DefaultOAuth2UserService {
         }
     }
 
+    //로그아웃
+    public void logout(String token) {
+        String email = jwtTokenProvider.getEmail(token);
+        Optional<Member> member = memberRepository.findByEmail(email);
+        if (member.isPresent()) {
+            Member user = member.get();
+            user.setRefreshToken(null);
+            memberRepository.save(user);
+        } else {
+            throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        }
+    }
+
     //닉네임, 비밀번호, 이메일 유효 검증
     public void validateRegister(String email, String password, String nickname) {
         validateEmail(email);

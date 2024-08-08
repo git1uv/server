@@ -40,7 +40,9 @@ public class MemberRequestDto {
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class LoginRequestDto {
+        @NotNull
         private String email;
+        @NotNull
         private String password;
     }
 }

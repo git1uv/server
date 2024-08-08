@@ -1,9 +1,9 @@
 package com.simter.config;
 
+import com.simter.apiPayload.code.status.ErrorStatus;
+import com.simter.apiPayload.exception.handler.ErrorHandler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -11,13 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JwtTokenProvider jwtTokenProvider;
 
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -25,6 +24,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
+            if (!jwtTokenProvider.validateToken(token)) {
+                response.sendError(401, "만료되었습니다.");
+                throw new ErrorHandler(ErrorStatus.JWT_UNSUPPORTED_TOKEN);
+            }
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

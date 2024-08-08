@@ -96,6 +96,10 @@ public class WebSecurityConfig {
             .logout(LogoutConfigurer::permitAll)
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
                 UsernamePasswordAuthenticationFilter.class)
+            .logout(logout -> logout
+                .logoutUrl("/api/v1/logout")
+                .permitAll()
+            )
             .build();
     }
 

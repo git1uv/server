@@ -2,20 +2,21 @@ package com.simter.domain.member.controller;
 
 import com.simter.apiPayload.ApiResponse;
 import com.simter.config.JwtTokenProvider;
+import com.simter.domain.member.converter.TokenConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
-import com.simter.domain.member.dto.MemberRequestDto.EmailValidationRequestDto;
 import com.simter.domain.member.dto.MemberRequestDto.LoginRequestDto;
 import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
 import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
 import com.simter.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -35,9 +36,8 @@ public class MemberController {
 
     @Operation(summary = "이메일 중복체크 API", description = "이메일이 이미 가입되어 있는지 조회하는 API")
     @GetMapping("/api/v1/register/general/check")
-    public ApiResponse<EmailValidationResponseDto> checkRegister(@RequestBody EmailValidationRequestDto emailValidationRequestDto) {
-        EmailValidationResponseDto emailValidationResponseDto = memberService.validateDuplicate(
-            emailValidationRequestDto.getEmail());
+    public ApiResponse<EmailValidationResponseDto> checkRegister(@RequestParam String email) {
+        EmailValidationResponseDto emailValidationResponseDto = memberService.validateDuplicate(email);
         return ApiResponse.onSuccess(emailValidationResponseDto);
     }
 
@@ -49,5 +49,24 @@ public class MemberController {
         LoginResponseDto loginResponseDto = memberService.login(email, password);
         return ApiResponse.onSuccess(loginResponseDto);
     }
+
+    @Operation(summary = "로그아웃 API", description = "리프레시토큰을 파괴하는 API")
+    @DeleteMapping("/api/v1/logout")
+    public ApiResponse<Void> logout(HttpServletRequest request) {
+        String token = jwtTokenProvider.resolveToken(request);
+        memberService.logout(token);
+        return ApiResponse.onSuccess(null);
+    }
+
+    @Operation(summary = "토큰 재발급 API", description = "리프레시토큰과 액세스 토큰을 재발급하는 API")
+    @GetMapping("/api/v1/reissue")
+    public ApiResponse<JwtTokenDto> reissue(HttpServletRequest request) {
+        String stringToken = jwtTokenProvider.resolveToken(request);
+        JwtTokenDto token = TokenConverter.convertToToken(stringToken);
+        String email = jwtTokenProvider.getEmail(token.getAccessToken());
+        JwtTokenDto newToken = jwtTokenProvider.reissueToken(email, token.getRefreshToken());
+        return ApiResponse.onSuccess(newToken);
+    }
+
 }
 

@@ -1,18 +1,23 @@
 package com.simter.config;
 
+import com.simter.apiPayload.code.status.ErrorStatus;
+import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.domain.member.dto.JwtTokenDto;
-import io.github.cdimascio.dotenv.Dotenv;
+import com.simter.domain.member.entity.Member;
+import com.simter.domain.member.repository.MemberRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.Claims;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -23,26 +28,23 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final Key secretKey;
+    private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final MemberRepository memberRepository;
     private static final String AUTHORITIES_KEY = "ROLE_USER";
-
-    public JwtTokenProvider() {
-        Dotenv dotenv = Dotenv.load();
-        this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    }
 
     public JwtTokenDto generateToken(Authentication authentication, String email) {
 
         long currentTime = (new Date()).getTime();
 
         Date accessTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 3));
-        Date refreshTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 24));
+        Date refreshTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 24 * 7));
 
         Claims claims = Jwts.claims().setSubject(authentication.getName());
         claims.put(AUTHORITIES_KEY, authentication.getAuthorities().stream()
@@ -61,6 +63,14 @@ public class JwtTokenProvider {
             .signWith(secretKey)
             .compact();
 
+        Optional<Member> member = memberRepository.findByEmail(email);
+        if (member.isPresent()) {
+            Member user = member.get();
+            user.setRefreshToken(refreshToken);
+            memberRepository.save(user);
+        } else {
+            throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        }
         return JwtTokenDto.builder()
             .grantType("Bearer")
             .accessToken(accessToken)
@@ -84,6 +94,34 @@ public class JwtTokenProvider {
         User principal = new User(claims.getSubject(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, accessToken, authorities);
+    }
+
+    //액세스 토큰과 리프레시 토큰 함께 재발행
+    public JwtTokenDto reissueToken(String email, String refreshToken) {
+        Optional<Member> member = memberRepository.findByEmail(email);
+        if (member.isPresent()) {
+            Member user = member.get();
+            String storedRefreshToken = user.getRefreshToken();
+
+            if (!storedRefreshToken.equals(refreshToken)) {
+                throw new ErrorHandler(ErrorStatus.JWT_TOKEN_NOT_FOUND);
+            }
+
+            Authentication authentication = getAuthentication(storedRefreshToken);
+            JwtTokenDto newToken = generateToken(authentication, email);
+
+            return newToken;
+        } else {
+            throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        }
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     public boolean validateToken(String token) {
