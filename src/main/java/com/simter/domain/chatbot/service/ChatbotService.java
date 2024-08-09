@@ -22,4 +22,11 @@ public class ChatbotService {
 
     }
 
+    //사용자의 default 챗봇 조회
+    public String getDefaultChatbot(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        return member.getChatbot();
+    }
+
 }

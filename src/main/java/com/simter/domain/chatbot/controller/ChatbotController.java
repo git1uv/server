@@ -7,6 +7,7 @@ import com.simter.domain.mail.dto.MailDeleteRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,14 @@ public class ChatbotController {
     public ApiResponse<Void> updateDefaultChatbot(@PathVariable Long userId, @RequestBody DefaultChatbotRequestDto defaultChatbotRequestDto) {
         chatbotService.updateDefaultChatbot(userId, defaultChatbotRequestDto.getChatbot());
         return ApiResponse.onSuccess(null);
+    }
+
+    //Default 챗봇 조회 API(GET)
+    @Operation(summary = "Default 챗봇 조회", description = "사용자의 default 챗봇을 조회하는 API")
+    @GetMapping("/chatbot/{userId}")
+    public ApiResponse<String> getDefaultChatbot(@PathVariable Long userId) {
+        String response = chatbotService.getDefaultChatbot(userId);
+        return ApiResponse.onSuccess(response);
     }
 
 }
