@@ -1,5 +1,7 @@
 package com.simter.domain.member.service;
 
+import static org.springframework.security.core.context.SecurityContextHolder.setContext;
+
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.config.JwtTokenProvider;
@@ -10,10 +12,16 @@ import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto
 import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import java.util.Optional;
+import java.util.Random;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +36,7 @@ public class MemberService extends DefaultOAuth2UserService {
     private final BCryptPasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JavaMailSender mailSender;
 
     //회원가입
     public void register(RegisterDto registerRequestDto) {
@@ -50,37 +59,50 @@ public class MemberService extends DefaultOAuth2UserService {
     //로그인
     @Transactional
     public LoginResponseDto login(String email, String password) {
-        Optional<Member> user = memberRepository.findByEmail(email);
-        if (user.isPresent()) {
-            if (!encoder.matches(password, user.get().getPassword())) {
-                throw new ErrorHandler(ErrorStatus.INVALID_LOGIN);
-            } else {
-                UsernamePasswordAuthenticationToken token
-                    = new UsernamePasswordAuthenticationToken(email, password);
-                Authentication authentication
-                    = authenticationManager.authenticate(token);
-                JwtTokenDto jwtToken = jwtTokenProvider.generateToken(authentication, email);
-
-                return LoginResponseDto.builder()
-                    .token(jwtToken)
-                    .build();
-            }
-        } else {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.INVALID_LOGIN));
+        if (!encoder.matches(password, member.getPassword())) {
             throw new ErrorHandler(ErrorStatus.INVALID_LOGIN);
+        } else {
+            UsernamePasswordAuthenticationToken token
+                = new UsernamePasswordAuthenticationToken(email, password);
+            Authentication authentication
+                = authenticationManager.authenticate(token);
+            JwtTokenDto jwtToken = jwtTokenProvider.generateToken(authentication, email);
+
+            return LoginResponseDto.builder()
+                .token(jwtToken)
+                .build();
         }
+
     }
 
     //로그아웃
     public void logout(String token) {
         String email = jwtTokenProvider.getEmail(token);
-        Optional<Member> member = memberRepository.findByEmail(email);
-        if (member.isPresent()) {
-            Member user = member.get();
-            user.setRefreshToken(null);
-            memberRepository.save(user);
-        } else {
-            throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
-        }
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        member.setRefreshToken(null);
+        memberRepository.save(member);
+    }
+
+    //비밀번호 재발송
+    public void tempPw(String email) throws MessagingException {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_REGISTERED));
+        Random random = new Random();
+        String newPassword = RandomStringUtils.randomAlphanumeric(8 + random.nextInt(9));
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+        mimeMessageHelper.setTo(email);
+        mimeMessageHelper.setSubject("심터 비밀번호 재설정 메일입니다.");
+        mimeMessageHelper.setText(newPassword, true);
+        mailSender.send(mimeMessage);
+
+        String encryptedPassword = encoder.encode(newPassword);
+        member.setPassword(encryptedPassword);
+        memberRepository.save(member);
     }
 
     //닉네임, 비밀번호, 이메일 유효 검증

@@ -102,4 +102,8 @@ public class Member implements UserDetails {
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

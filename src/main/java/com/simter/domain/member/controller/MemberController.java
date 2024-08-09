@@ -5,15 +5,18 @@ import com.simter.config.JwtTokenProvider;
 import com.simter.domain.member.converter.TokenConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.dto.MemberRequestDto.LoginRequestDto;
+import com.simter.domain.member.dto.MemberRequestDto.PasswordReissueDto;
 import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
 import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
 import com.simter.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -68,5 +71,12 @@ public class MemberController {
         return ApiResponse.onSuccess(newToken);
     }
 
+    @Operation(summary = "비밀번호 재발송", description = "비밃번호를 재생성해서 유저에게 메일 발송")
+    @PatchMapping("/api/v1/login/temp-pw")
+    public ApiResponse<JwtTokenDto> tempPw(@RequestBody PasswordReissueDto passwordReissueDto)
+        throws MessagingException {
+        memberService.tempPw(passwordReissueDto.getEmail());
+        return ApiResponse.onSuccess(null);
+    }
 }
 
