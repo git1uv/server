@@ -33,8 +33,7 @@ public class Member implements UserDetails {
     private String nickname;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean hasAirplane;
+    private boolean hasAirplane = false;
 
     @Column(length = 50)
     @ColumnDefault("half")
@@ -47,14 +46,16 @@ public class Member implements UserDetails {
     private String loginType;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean mailAlert;
+    private boolean mailAlert = false;
 
     @Column(nullable = false)
-    @ColumnDefault("true")
-    private Boolean status;
+    private boolean status = true;
 
+    @Column(nullable = true)
     private LocalDateTime inactiveDate;
+
+    @Column(nullable = true)
+    private String refreshToken;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -96,5 +97,9 @@ public class Member implements UserDetails {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

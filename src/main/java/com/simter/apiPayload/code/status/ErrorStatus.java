@@ -13,8 +13,8 @@ public enum ErrorStatus implements BaseCode {
 
     // 가장 일반적인 응답
     _INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON500", "서버 에러, 관리자에게 문의 바랍니다."),
-    _BAD_REQUEST(HttpStatus.BAD_REQUEST,"COMMON400","잘못된 요청입니다."),
-    _UNAUTHORIZED(HttpStatus.UNAUTHORIZED,"COMMON401","인증이 필요합니다."),
+    _BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON400", "잘못된 요청입니다."),
+    _UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COMMON401", "인증이 필요합니다."),
     _FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
 
     //JWT
@@ -29,7 +29,11 @@ public enum ErrorStatus implements BaseCode {
 
     // 멤버 관련 에러
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "사용자가 없습니다."),
-    NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임은 필수 입니다."),
+    NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임은 필수입니다."),
+    INVALID_EMAIL_FORMAT(HttpStatus.BAD_REQUEST, "MEMBER4003", "올바른 이메일 형식이 아닙니다."),
+    INVALID_PASSWORD_FORMAT(HttpStatus.BAD_REQUEST, "MEMBER4004", "올바른 비밀번호 형식이 아닙니다."),
+    INVALID_NICKNAME_FORMAT(HttpStatus.BAD_REQUEST, "MEMBER4005", "올바른 닉네임 형식이 아닙니다."),
+    INVALID_LOGIN(HttpStatus.BAD_REQUEST, "MEMBER4006", "가입되지 않은 이메일이거나 비밀번호가 일치하지 않습니다."),
 
     //종이비행기 관련 에러
     AIRPLANE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAPER_AIRPLANE4001", "종이비행기가 없습니다."),

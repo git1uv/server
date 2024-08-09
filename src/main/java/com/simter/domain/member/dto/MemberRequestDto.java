@@ -13,7 +13,7 @@ public class MemberRequestDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class RegisterRequestDto {
+    public static class RegisterDto {
         @NotNull
         private String email;
 
@@ -22,6 +22,9 @@ public class MemberRequestDto {
 
         @NotNull
         private String nickname;
+
+        @NotNull
+        private String loginType;
     }
 
     @Builder
@@ -30,5 +33,16 @@ public class MemberRequestDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class EmailValidationRequestDto {
         @NotNull String email;
+    }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class LoginRequestDto {
+        @NotNull
+        private String email;
+        @NotNull
+        private String password;
     }
 }

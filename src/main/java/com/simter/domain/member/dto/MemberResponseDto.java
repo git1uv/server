@@ -13,8 +13,6 @@ public class MemberResponseDto {
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class EmailValidationResponseDto {
-        private int status;
-        private String message;
         private boolean isValid;
     }
 
@@ -22,8 +20,7 @@ public class MemberResponseDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class BasicResponseDto {
-        private int status;
-        private String message;
+    public static class LoginResponseDto {
+        private JwtTokenDto token;
     }
 }
