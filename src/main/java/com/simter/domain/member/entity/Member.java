@@ -106,4 +106,8 @@ public class Member implements UserDetails {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public void setChatbot(String chatbot) {
+        this.chatbot = chatbot;
+    }
 }
