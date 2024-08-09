@@ -17,7 +17,6 @@ import io.jsonwebtoken.Claims;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -63,14 +62,11 @@ public class JwtTokenProvider {
             .signWith(secretKey)
             .compact();
 
-        Optional<Member> member = memberRepository.findByEmail(email);
-        if (member.isPresent()) {
-            Member user = member.get();
-            user.setRefreshToken(refreshToken);
-            memberRepository.save(user);
-        } else {
-            throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
-        }
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        member.setRefreshToken(refreshToken);
+        memberRepository.save(member);
+
         return JwtTokenDto.builder()
             .grantType("Bearer")
             .accessToken(accessToken)
@@ -98,22 +94,18 @@ public class JwtTokenProvider {
 
     //액세스 토큰과 리프레시 토큰 함께 재발행
     public JwtTokenDto reissueToken(String email, String refreshToken) {
-        Optional<Member> member = memberRepository.findByEmail(email);
-        if (member.isPresent()) {
-            Member user = member.get();
-            String storedRefreshToken = user.getRefreshToken();
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-            if (!storedRefreshToken.equals(refreshToken)) {
-                throw new ErrorHandler(ErrorStatus.JWT_TOKEN_NOT_FOUND);
-            }
+        String storedRefreshToken = member.getRefreshToken();
 
-            Authentication authentication = getAuthentication(storedRefreshToken);
-            JwtTokenDto newToken = generateToken(authentication, email);
-
-            return newToken;
-        } else {
-            throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        if (!storedRefreshToken.equals(refreshToken)) {
+            throw new ErrorHandler(ErrorStatus.JWT_TOKEN_NOT_FOUND);
         }
+
+        Authentication authentication = getAuthentication(storedRefreshToken);
+
+        return generateToken(authentication, email);
     }
 
     public String resolveToken(HttpServletRequest request) {

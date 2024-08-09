@@ -19,6 +19,8 @@ public class SimterApplication {
         System.setProperty("OAUTH_PW", dotenv.get("OAUTH_PW"));
         System.setProperty("KAKAO_ID", dotenv.get("KAKAO_ID"));
         System.setProperty("KAKAO_URI", dotenv.get("KAKAO_URI"));
+        System.setProperty("MAIL_NAME", dotenv.get("MAIL_NAME"));
+        System.setProperty("MAIL_PW", dotenv.get("MAIL_PW"));
         SpringApplication.run(SimterApplication.class, args);
     }
 }
