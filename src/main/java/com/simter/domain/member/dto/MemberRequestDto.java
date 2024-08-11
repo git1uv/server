@@ -53,4 +53,21 @@ public class MemberRequestDto {
         @NotNull
         private String password;
     }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class NicknameChangeDto {
+        @NotNull String nickname;
+    }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class PasswordChangeDto {
+        @NotNull String oldPassword;
+        @NotNull String newPassword;
+    }
 }

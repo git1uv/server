@@ -4,7 +4,10 @@ import com.simter.apiPayload.ApiResponse;
 import com.simter.config.JwtTokenProvider;
 import com.simter.domain.member.converter.TokenConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
+import com.simter.domain.member.dto.MainDto;
 import com.simter.domain.member.dto.MemberRequestDto.LoginRequestDto;
+import com.simter.domain.member.dto.MemberRequestDto.NicknameChangeDto;
+import com.simter.domain.member.dto.MemberRequestDto.PasswordChangeDto;
 import com.simter.domain.member.dto.MemberRequestDto.PasswordReissueDto;
 import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,7 +59,8 @@ public class MemberController {
 
     @Operation(summary = "로그아웃 API", description = "리프레시토큰을 파괴하는 API")
     @DeleteMapping("/api/v1/logout")
-    public ApiResponse<Void> logout(HttpServletRequest request) {
+    public ApiResponse<Void> logout(HttpServletRequest request,
+        @RequestHeader(value = "Authorization", required = false) String authToken) {
         String token = jwtTokenProvider.resolveToken(request);
         memberService.logout(token);
         return ApiResponse.onSuccess(null);
@@ -71,12 +76,55 @@ public class MemberController {
         return ApiResponse.onSuccess(newToken);
     }
 
-    @Operation(summary = "비밀번호 재발송", description = "비밃번호를 재생성해서 유저에게 메일 발송")
+    @Operation(summary = "비밀번호 재발송 API", description = "비밃번호를 재생성해서 유저에게 메일 발송하는 API")
     @PatchMapping("/api/v1/login/temp-pw")
     public ApiResponse<JwtTokenDto> tempPw(@RequestBody PasswordReissueDto passwordReissueDto)
         throws MessagingException {
         memberService.tempPw(passwordReissueDto.getEmail());
         return ApiResponse.onSuccess(null);
     }
+
+    @Operation(summary = "메인화면 API", description = "닉네임, 비행기 유무, 편지 알림여부를 보내는 API")
+    @GetMapping("/api/v1/main")
+    public ApiResponse<MainDto> main(HttpServletRequest request) {
+        String stringToken = jwtTokenProvider.resolveToken(request);
+        JwtTokenDto token = TokenConverter.convertToToken(stringToken);
+        String email = jwtTokenProvider.getEmail(token.getAccessToken());
+        MainDto res = memberService.main(email);
+        return ApiResponse.onSuccess(res);
+    }
+
+    @Operation(summary = "닉네임 변경 API", description = "닉네임을 변경하는 API")
+    @PatchMapping("/api/v1/setting/nickname")
+    public ApiResponse<Void> changeNickname(HttpServletRequest request, @RequestBody
+        NicknameChangeDto nicknameChangeDto) {
+        String stringToken = jwtTokenProvider.resolveToken(request);
+        JwtTokenDto token = TokenConverter.convertToToken(stringToken);
+        String email = jwtTokenProvider.getEmail(token.getAccessToken());
+        memberService.changeNickname(email, nicknameChangeDto.getNickname());
+        return ApiResponse.onSuccess(null);
+    }
+
+    @Operation(summary = "비밀번호 변경 API", description = "비밀번호를 변경하는 API")
+    @PatchMapping("/api/v1/setting/password")
+    public ApiResponse<Void> changeNickname(HttpServletRequest request, @RequestBody
+        PasswordChangeDto passwordChangeDto) {
+        String stringToken = jwtTokenProvider.resolveToken(request);
+        JwtTokenDto token = TokenConverter.convertToToken(stringToken);
+        String email = jwtTokenProvider.getEmail(token.getAccessToken());
+        memberService.changePassword(email, passwordChangeDto);
+        return ApiResponse.onSuccess(null);
+    }
+
+    @Operation(summary = "회원 탈퇴 API", description = "상태를 비활성화로 바꾸고 날짜를 저장하는 API")
+    @PatchMapping("/api/v1/setting/delete-account")
+    public ApiResponse<Void> deleteAccount(HttpServletRequest request) {
+        String stringToken = jwtTokenProvider.resolveToken(request);
+        JwtTokenDto token = TokenConverter.convertToToken(stringToken);
+        String email = jwtTokenProvider.getEmail(token.getAccessToken());
+        memberService.deleteAccount(email);
+        return ApiResponse.onSuccess(null);
+    }
+
 }
 
