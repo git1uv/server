@@ -24,8 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-//eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiLtmLjrkZAiLCJST0xFX1VTRVIiOlsiUk9MRV9VU0VSIl0sImVtYWlsIjoibWluYWhraW0wMjZAbmF2ZXIuY29tIiwiaWF0IjoxNzIzNjU5NjU1LCJleHAiOjE3MjM2NzA0NTV9.Cg9t8aRcm-hedl0HLYuJnEIqvFPUSSI2RqK_1KoN-9I eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjQyNjQ0NTV9.0ziBv_80dIk41Ei23n8R0Nu5gie_K7hHPugSaklvaaw
-
 @RequiredArgsConstructor
 @RestController
 public class MemberController {
