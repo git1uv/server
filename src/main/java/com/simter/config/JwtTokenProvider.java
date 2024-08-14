@@ -108,10 +108,16 @@ public class JwtTokenProvider {
         return generateToken(authentication, email);
     }
 
-    public String resolveToken(HttpServletRequest request) {
+    public JwtTokenDto resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            String[] tokenParts = bearerToken.split(" ");
+            JwtTokenDto token = JwtTokenDto.builder()
+                .grantType(tokenParts[0])
+                .accessToken(tokenParts[1])
+                .refreshToken(tokenParts[2])
+                .build();
+            return token;
         }
         return null;
     }
