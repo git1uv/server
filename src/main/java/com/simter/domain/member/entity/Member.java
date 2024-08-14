@@ -107,6 +107,18 @@ public class Member implements UserDetails {
         this.password = password;
     }
 
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void changeStatusToInactive() {
+        this.status = false;
+    }
+
+    public void setInactiveDate(LocalDateTime inactiveDate) {
+        this.inactiveDate = inactiveDate;
+
     public void setChatbot(String chatbot) {
         this.chatbot = chatbot;
     }

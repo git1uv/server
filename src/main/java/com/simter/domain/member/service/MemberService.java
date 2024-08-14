@@ -7,6 +7,8 @@ import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.config.JwtTokenProvider;
 import com.simter.domain.member.converter.MemberConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
+import com.simter.domain.member.dto.MainDto;
+import com.simter.domain.member.dto.MemberRequestDto.PasswordChangeDto;
 import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
 import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
@@ -15,6 +17,7 @@ import com.simter.domain.member.repository.MemberRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -96,12 +99,56 @@ public class MemberService extends DefaultOAuth2UserService {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
         mimeMessageHelper.setTo(email);
-        mimeMessageHelper.setSubject("심터 비밀번호 재설정 메일입니다.");
-        mimeMessageHelper.setText(newPassword, true);
+        mimeMessageHelper.setSubject("[심터] 비밀번호 재설정 메일입니다.");
+        mimeMessageHelper.setText("새 비밀번호: " + newPassword, true);
         mailSender.send(mimeMessage);
 
         String encryptedPassword = encoder.encode(newPassword);
         member.setPassword(encryptedPassword);
+        memberRepository.save(member);
+    }
+
+    //메인화면 api
+    public MainDto main(String email) {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        return MainDto.builder()
+            .mailAlert(member.isMailAlert())
+            .nickname(member.getNickname())
+            .airplane(member.isHasAirplane())
+            .build();
+    }
+
+    //닉네임 변경
+    public void changeNickname(String email, String nickname) {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        validateNickname(nickname);
+        member.setNickname(nickname);
+        memberRepository.save(member);
+    }
+
+    //비밀번호 변경
+    public void changePassword(String email, PasswordChangeDto passwordChangeDto) {
+        String oldPw = passwordChangeDto.getOldPassword();
+        String newPw = passwordChangeDto.getNewPassword();
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        if (!encoder.matches(oldPw, member.getPassword())) {
+            throw new ErrorHandler(ErrorStatus.WRONG_PASSWORD);
+        }
+        validatePassword(newPw);
+        member.setPassword(newPw);
+        memberRepository.save(member);
+    }
+
+    //회원 탈퇴
+    public void deleteAccount(String email) {
+        LocalDateTime dateTime = LocalDateTime.now();
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        member.changeStatusToInactive();;
+        member.setInactiveDate(dateTime);
         memberRepository.save(member);
     }
 

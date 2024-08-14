@@ -34,13 +34,14 @@ public enum ErrorStatus implements BaseCode {
     INVALID_PASSWORD_FORMAT(HttpStatus.BAD_REQUEST, "MEMBER4004", "올바른 비밀번호 형식이 아닙니다."),
     INVALID_NICKNAME_FORMAT(HttpStatus.BAD_REQUEST, "MEMBER4005", "올바른 닉네임 형식이 아닙니다."),
     INVALID_LOGIN(HttpStatus.BAD_REQUEST, "MEMBER4006", "가입되지 않은 이메일이거나 비밀번호가 일치하지 않습니다."),
-    MAIL_NOT_REGISTERED(HttpStatus.BAD_REQUEST, "MEMBER4006", "가입되지 않은 이메일입니다."),
+    MAIL_NOT_REGISTERED(HttpStatus.BAD_REQUEST, "MEMBER4007", "가입되지 않은 이메일입니다."),
+    WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "MEMBER4008", "기존 비밀번호가 일치하지 않습니다."),
 
     //종이비행기 관련 에러
     AIRPLANE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAPER_AIRPLANE4001", "종이비행기가 없습니다."),
 
     //메일 관련 에러
-    MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "편지이 없습니다.");
+    MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "편지가 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
