@@ -138,7 +138,7 @@ public class MemberService extends DefaultOAuth2UserService {
             throw new ErrorHandler(ErrorStatus.WRONG_PASSWORD);
         }
         validatePassword(newPw);
-        member.setPassword(newPw);
+        member.setPassword(encoder.encode(newPw));
         memberRepository.save(member);
     }
 
