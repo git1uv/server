@@ -118,4 +118,8 @@ public class Member implements UserDetails {
     public void setInactiveDate(LocalDateTime inactiveDate) {
         this.inactiveDate = inactiveDate;
     }
+
+    public void setChatbot(String chatbot) {
+        this.chatbot = chatbot;
+    }
 }
