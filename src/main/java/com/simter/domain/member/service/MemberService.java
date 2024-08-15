@@ -56,7 +56,9 @@ public class MemberService extends DefaultOAuth2UserService {
             .loginType(loginType)
             .build();
         Member member = MemberConverter.convertToEntity(newRegisterDto);
-        memberRepository.save(member);
+        if (!memberRepository.existsByEmail(email)) {
+            memberRepository.save(member);
+        }
     }
 
     //로그인
