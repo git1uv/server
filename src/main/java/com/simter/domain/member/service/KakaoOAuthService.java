@@ -26,8 +26,8 @@ public class KakaoOAuthService {
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
-        body.add("client_id", dotenv.get("KAKAO_ID") );
-        body.add("redirect_uri",dotenv.get("KAKAO_URI"));
+        body.add("client_id", dotenv.get("KAKAO_ID"));
+        body.add("redirect_uri", dotenv.get("KAKAO_URI"));
         body.add("code", code);
         body.add("client_secret", dotenv.get("KAKAO_SECRET"));
 

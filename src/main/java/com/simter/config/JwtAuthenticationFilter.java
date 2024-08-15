@@ -2,6 +2,7 @@ package com.simter.config;
 
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
+import com.simter.domain.member.dto.JwtTokenDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,22 +24,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         FilterChain filterChain) throws ServletException, IOException {
 
         String token = request.getHeader("Authorization");
+        JwtTokenDto jwtTokenDto = jwtTokenProvider.resolveToken(request);
         if (token != null && token.startsWith("Bearer ")) {
-            if (!jwtTokenProvider.validateToken(token)) {
+            if (!jwtTokenProvider.validateToken(jwtTokenDto.getAccessToken())) {
                 response.sendError(401, "만료되었습니다.");
                 throw new ErrorHandler(ErrorStatus.JWT_UNSUPPORTED_TOKEN);
             }
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
+            Authentication authentication = jwtTokenProvider.getAuthentication(jwtTokenDto.getAccessToken());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);
-    }
-
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
-            return bearerToken.substring(7);
-        }
-        return null;
     }
 }

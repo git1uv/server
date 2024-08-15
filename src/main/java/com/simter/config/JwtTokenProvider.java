@@ -5,18 +5,19 @@ import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.security.Key;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.Claims;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -34,7 +35,9 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final Dotenv dotenv = Dotenv.load();
+    private String secretKey = Base64.getEncoder().encodeToString(
+        Objects.requireNonNull(dotenv.get("JWT_SECRET")).getBytes());
     private final MemberRepository memberRepository;
     private static final String AUTHORITIES_KEY = "ROLE_USER";
 
@@ -54,12 +57,12 @@ public class JwtTokenProvider {
             .setClaims(claims)
             .setIssuedAt(new Date(currentTime))
             .setExpiration(accessTokenExpirationTime)
-            .signWith(secretKey)
+            .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact();
 
         String refreshToken = Jwts.builder()
             .setExpiration(refreshTokenExpirationTime)
-            .signWith(secretKey)
+            .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact();
 
         Member member = memberRepository.findByEmail(email)
@@ -108,10 +111,16 @@ public class JwtTokenProvider {
         return generateToken(authentication, email);
     }
 
-    public String resolveToken(HttpServletRequest request) {
+    public JwtTokenDto resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            String[] tokenParts = bearerToken.split(" ");
+            JwtTokenDto token = JwtTokenDto.builder()
+                .grantType(tokenParts[0])
+                .accessToken(tokenParts[1])
+                .refreshToken(tokenParts[2])
+                .build();
+            return token;
         }
         return null;
     }
