@@ -18,7 +18,7 @@ public class Calendars {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="calendar_id")
+    @Column(name = "calendar_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

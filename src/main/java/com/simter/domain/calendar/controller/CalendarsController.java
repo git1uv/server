@@ -20,11 +20,12 @@ public class CalendarsController {
     CalendarsService calendarsService;
 
     @Operation(summary = "달력 홈 API", description = "월별로 달력을 가지고 오는 API")
-    @GetMapping("/api/v1/calendar/:month/home")
-    public ApiResponse<CalendarsHomeDto> calendarsHome(HttpServletRequest request, @RequestParam String month) {
+    @GetMapping("/api/v1/calendar/:year/:month/home")
+    public ApiResponse<CalendarsHomeDto> calendarsHome(HttpServletRequest request,
+        @RequestParam Long year, @RequestParam Long month) {
         JwtTokenDto token = jwtTokenProvider.resolveToken(request);
         String email = jwtTokenProvider.getEmail(token.getAccessToken());
-        return ApiResponse.onSuccess();
+        return ApiResponse.onSuccess(calendarsService.getMonthlyCalendar(email, year, month));
     }
 
 }

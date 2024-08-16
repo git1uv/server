@@ -1,5 +1,6 @@
 package com.simter.domain.calendar.dto;
 
+import java.time.LocalDate;
 import java.util.Date;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ public class CalendarsResponseDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class CalendarsHomeDayDto {
         private Long calendarId;
-        private Date date;
+        private LocalDate date;
         private String emotion;
         private Boolean hasCounseling;
     }
