@@ -42,5 +42,20 @@ public class CounselingLog {
     @Column(nullable = false, length = 100)
     private String title;
 
+    public void setMember(Long memberId) {
+        this.member = member;
+    }
+
+    public void setChatbotType(String chatbotType) {
+        this.chatbotType = chatbotType;
+    }
+
+    public void setStartedAt(LocalDateTime startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public void setEndedAt(LocalDateTime endedAt) {
+        this.endedAt = endedAt;
+    }
 
 }
