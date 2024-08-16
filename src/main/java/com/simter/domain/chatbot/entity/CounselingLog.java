@@ -33,13 +33,13 @@ public class CounselingLog {
     @Column(updatable = false)
     private LocalDateTime endedAt;
 
-    @Column(nullable = false, length = 500)
+    @Column(length = 500)
     private String summary;
 
-    @Column(nullable = false, length = 500)
+    @Column(length = 500)
     private String suggestion;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String title;
 
     public void setMember(Long memberId) {
