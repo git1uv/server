@@ -49,8 +49,8 @@ public class ChatbotController {
 
     //특정 세션의 챗봇 type 설정(PATCH)
     @Operation(summary = "특정 세션의 챗봇 설정 변경", description = "사용자의 세션에 해당하는 챗봇 타입을 설정하고 새로운 상담 일지를 생성하는 API")
-    @PatchMapping("/chatbot/session")
-    public ApiResponse<SelectChatbotResponseDto> updateChatbotSession(HttpServletRequest request, @RequestBody SelectChatbotRequestDto selectChatbotRequestDto) {
+    @PostMapping("/chatbot/session")
+    public ApiResponse<SelectChatbotResponseDto> createChatbotSession(HttpServletRequest request, @RequestBody SelectChatbotRequestDto selectChatbotRequestDto) {
 
         JwtTokenDto token = jwtTokenProvider.resolveToken(request);
         String email = jwtTokenProvider.getEmail(token.getAccessToken());
