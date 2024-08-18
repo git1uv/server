@@ -1,5 +1,5 @@
 package com.simter.domain.chatbot.repository;
 
-public class ChatbotRepository {
+public interface ChatbotRepository {
 
 }
