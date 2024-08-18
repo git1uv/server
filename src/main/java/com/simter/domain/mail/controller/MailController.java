@@ -1,6 +1,5 @@
 package com.simter.domain.mail.controller;
 
-
 import com.simter.apiPayload.ApiResponse;
 import com.simter.domain.mail.dto.MailDeleteRequestDto;
 import com.simter.domain.mail.dto.MailGetResponseDto;
