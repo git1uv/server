@@ -1,6 +1,7 @@
 package com.simter.domain.chatbot.entity;
 
 import com.simter.domain.member.entity.Member;
+import com.simter.domain.solution.entity.Solution;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -41,6 +42,7 @@ public class CounselingLog {
 
     @Column(length = 100)
     private String title;
+
 
     public void setMember(Long memberId) {
         this.member = member;

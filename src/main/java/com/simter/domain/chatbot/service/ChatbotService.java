@@ -48,4 +48,11 @@ public class ChatbotService {
         log = counselingLogRepository.save(log);
         return new SelectChatbotResponseDto(log.getId());
     }
+
+    //상담일지 가져오기
+    public String getCounselingLog(Long counselingLogId) {
+        CounselingLog log = counselingLogRepository.findById(counselingLogId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
+        return log.getSummary();
+    }
 }

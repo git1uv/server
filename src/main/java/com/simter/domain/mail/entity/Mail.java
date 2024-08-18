@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Mail {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="mail_id")
