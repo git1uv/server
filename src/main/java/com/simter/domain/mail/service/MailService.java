@@ -37,19 +37,19 @@ public class MailService {
     }
 
     //특정 사용자의 즐겨찾기한 메일 조회
-    public MailGetResponseDto getStaredMails(Long memberId) {
+    public MailGetResponseDto getStarredMails(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<Mail> mails = mailRepository.findByMemberAndIsStaredTrue(member);
+        List<Mail> mails = mailRepository.findByMemberAndIsStarredTrue(member);
         return mailConverter.convertToMailGetResponseDto(mails);
     }
 
     //특정 메일의 즐겨찾기 여부 변경
-    public void changeStared(Long mailId) {
+    public void changeStarred(Long mailId) {
         Mail mail = mailRepository.findById(mailId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
-        mail.setIsStared(!mail.getIsStared());
+        mail.setIsStarred(!mail.getIsStarred());
         mailRepository.save(mail);
     }
 

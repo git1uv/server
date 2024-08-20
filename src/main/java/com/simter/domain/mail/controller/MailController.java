@@ -1,6 +1,5 @@
 package com.simter.domain.mail.controller;
 
-
 import com.simter.apiPayload.ApiResponse;
 import com.simter.domain.mail.dto.MailDeleteRequestDto;
 import com.simter.domain.mail.dto.MailGetResponseDto;
@@ -34,17 +33,17 @@ public class MailController {
 
     // 편지 즐겨찾기 조회 API (GET)
     @Operation(summary = "편지 즐겨찾기 조회", description = "편지를 '즐겨찾기'로 조회하는 API")
-    @GetMapping("/mail/stared/{memberId}")
-    public ApiResponse<MailGetResponseDto> getStaredMails(@PathVariable Long memberId) {
-        MailGetResponseDto response = mailService.getStaredMails(memberId);
+    @GetMapping("/mail/starred/{memberId}")
+    public ApiResponse<MailGetResponseDto> getStarredMails(@PathVariable Long memberId) {
+        MailGetResponseDto response = mailService.getStarredMails(memberId);
         return ApiResponse.onSuccess(response);
     }
 
     // 편지 즐겨찾기 변경 API (PATCH)
     @Operation(summary = "편지 즐겨찾기 변경", description = "특정 편지의 '즐겨찾기' 여부를 변경하는 API")
     @PatchMapping("/mail/star/{mailId}")
-    public ApiResponse<Void> changeStared(@PathVariable Long mailId) {
-        mailService.changeStared(mailId);
+    public ApiResponse<Void> changeStarred(@PathVariable Long mailId) {
+        mailService.changeStarred(mailId);
         return ApiResponse.onSuccess(null);
     }
 

@@ -42,10 +42,10 @@ public class Mail {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private Boolean isStared = false;
+    private Boolean isStarred = false;
 
-    public void setIsStared(Boolean isStared) {
-        this.isStared = isStared;
+    public void setIsStarred(Boolean isStared) {
+        this.isStarred = isStarred;
     }
 
     public void markAsDeleted() {

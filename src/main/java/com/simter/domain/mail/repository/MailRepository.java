@@ -15,7 +15,7 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
     List<Mail> findByMemberAndIsDeletedFalse(Member member);
 
     // 특정 사용자의 즐겨찾기 한 편지 조회
-    List<Mail> findByMemberAndIsStaredTrue(Member member);
+    List<Mail> findByMemberAndIsStarredTrue(Member member);
 
     Optional<Mail> findById(Long id);
 
