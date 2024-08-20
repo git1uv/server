@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum ErrorStatus implements BaseCode {
 
-    // 가장 일반적인 응답
+    // 기본 에러
     _INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON500", "서버 에러, 관리자에게 문의 바랍니다."),
     _BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON400", "잘못된 요청입니다."),
     _UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COMMON401", "인증이 필요합니다."),
@@ -41,7 +41,10 @@ public enum ErrorStatus implements BaseCode {
     AIRPLANE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAPER_AIRPLANE4001", "종이비행기가 없습니다."),
 
     //메일 관련 에러
-    MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "편지가 없습니다.");
+    MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "편지가 없습니다."),
+
+    //챗봇 관련 에러
+    CHATBOT_SESSION_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHATBOT4001", "해당 챗봇 세션이 없습니다");
 
     private final HttpStatus httpStatus;
     private final String code;
