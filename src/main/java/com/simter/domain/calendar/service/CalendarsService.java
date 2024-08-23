@@ -25,10 +25,15 @@ public class CalendarsService {
     public List<CalendarsHomeDayDto> getMonthlyCalendar(String email, int year, int month) {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
         Long memberId = member.getId();
+
         LocalDate startDate = LocalDate.of(year, month, 1);
+
         LocalDate endDate = LocalDate.of(year, month, 1);
+
         List<Calendars> calendarsList = calendarsRepository.findByUserIdAndDateBetween(memberId, startDate, endDate);
+
         List<CalendarsHomeDayDto> calendarsResponse = new ArrayList<>();
 
         for (int i = 0; i < calendarsList.size() - 1; i++) {
