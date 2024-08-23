@@ -20,11 +20,4 @@ public class CalendarsResponseDto {
         private String emotion;
         private Boolean hasCounseling;
     }
-    @Builder
-    @Getter
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class CalendarsHomeDto {
-        private CalendarsHomeDayDto[] calendarHomeDayDto;
-    }
 }

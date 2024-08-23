@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import org.hibernate.annotations.ColumnDefault;
 
 
 @Entity
@@ -28,6 +29,7 @@ public class Calendars {
     private LocalDate date;
 
     @Column(length = 100)
+    @ColumnDefault("none")
     private String emotion;
 
     @Column(length = 300)
