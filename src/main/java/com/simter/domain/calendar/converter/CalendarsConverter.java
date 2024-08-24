@@ -12,13 +12,13 @@ public class CalendarsConverter {
 
     public static CalendarCounselingLogRepository counselingLogRepository;
 
-    public static CalendarsHomeDayDto convertToMonthlyCalendar(Calendars calendars) {
+    public static CalendarsHomeDayDto convertToMonthlyCalendar(Long userId, Calendars calendars) {
 
         return CalendarsHomeDayDto.builder()
             .calendarId(calendars.getId())
             .date(calendars.getDate())
             .emotion(calendars.getEmotion())
-            .hasCounseling(counselingLogRepository.existsByCalendarsDate(calendars.getDate()))
+            .hasCounseling(counselingLogRepository.existsByUserIdAndCalendarsDate(userId, calendars.getDate()))
             .build();
     }
 }

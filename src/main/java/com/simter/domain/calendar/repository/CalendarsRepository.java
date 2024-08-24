@@ -11,6 +11,8 @@ public interface CalendarsRepository extends JpaRepository<Calendars, Long> {
 
     Optional<Calendars> findById(@NotNull Long id);
 
+    Optional<Calendars> findByUserIdAndDate(@NotNull Long userId, @NotNull LocalDate date);
+
     List<Calendars> findByUserIdAndDateBetween(@NotNull Long userId, @NotNull LocalDate startDate, @NotNull LocalDate endDate);
 
 }

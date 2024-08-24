@@ -11,5 +11,5 @@ public interface CalendarCounselingLogRepository extends JpaRepository<CalendarC
 
     List<CalendarCounselingLog> findByCalendarsDate(@NotNull LocalDate date);
 
-    boolean existsByCalendarsDate(@NotNull LocalDate date);
+    boolean existsByUserIdAndCalendarsDate(@NotNull Long userId, @NotNull LocalDate date);
 }
