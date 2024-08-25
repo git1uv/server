@@ -16,12 +16,10 @@ import com.simter.domain.member.repository.MemberRepository;
 import com.simter.domain.solution.entity.Solution;
 import com.simter.domain.solution.repository.SolutionRepository;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.integration.IntegrationProperties.Error;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -84,6 +82,53 @@ public class CalendarsService {
             throw new ErrorHandler(ErrorStatus.DAILY_CALENDAR_NOT_FOUND);
         }
 
+    }
+
+    //한줄 일기 업데이트
+    public void updateDiary(String email, Long calendarId, String content) {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Calendars calendar = calendarsRepository.findById(calendarId)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.CALENDAR_NOT_FOUND));
+
+        calendar.setDiary(content);
+        calendarsRepository.save(calendar);
+    }
+
+    //해결책 완료 여부 업데이트
+    public void updateSolution(String email, Long solutionId, boolean isCompleted) {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Solution solution = solutionRepository.findById(solutionId)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.SOLUTION_NOT_FOUND));
+
+        solution.setIsCompleted(isCompleted);
+        solutionRepository.save(solution);
+    }
+
+    //해결책 삭제
+    public void deleteSolution(String email, Long solutionId) {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Solution solution = solutionRepository.findById(solutionId)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.SOLUTION_NOT_FOUND));
+
+        solutionRepository.delete(solution);
+    }
+
+    //감정 업데이트
+    public void updateEmotion(String email, Long calendarId, String emotion) {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Calendars calendar = calendarsRepository.findById(calendarId)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.CALENDAR_NOT_FOUND));
+
+        calendar.setEmotion(emotion);
+        calendarsRepository.save(calendar);
     }
 
 }

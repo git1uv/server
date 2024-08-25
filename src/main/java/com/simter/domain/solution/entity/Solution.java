@@ -30,6 +30,6 @@ public class Solution {
     @ColumnDefault("false")
     private Boolean isCompleted;
 
-
+    public void setIsCompleted(boolean isCompleted) {this.isCompleted = isCompleted;}
 
 }

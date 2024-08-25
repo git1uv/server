@@ -35,9 +35,6 @@ public class Calendars {
     @Column(length = 300)
     private String diary;
 
-
-
-
-
-
+    public void setDiary(String content) {this.diary = content;}
+    public void setEmotion(String emotion) {this.emotion = emotion;}
 }
