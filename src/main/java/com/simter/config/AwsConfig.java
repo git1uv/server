@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.comprehend.ComprehendClient;
 @Configuration
 public class AwsConfig {
 
+    //AWS Comprehend 사용(감성 분석)
     @Bean
     public ComprehendClient comprehendClient() {
         return ComprehendClient.builder()

@@ -19,7 +19,11 @@ public class ClaudeService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         // 기본 설정 프롬프트 설정
+        String prompt_T = "You are a helpful assistant.";
+        String prompt_F = "You are a helpful assistant.";
+        String prompt_TF = "You are a helpful assistant.";
         String prompt = "You are a helpful assistant. Provide concise and accurate responses.";
+
 
         String requestBody = String.format("{\"input\": \"%s\n%s\"}", prompt, userInput);
 
