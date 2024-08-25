@@ -26,13 +26,11 @@ public class CalendarsService {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Long memberId = member.getId();
-
         LocalDate startDate = LocalDate.of(year, month, 1);
 
         LocalDate endDate = LocalDate.of(year, month, 1);
 
-        List<Calendars> calendarsList = calendarsRepository.findByUserIdAndDateBetween(memberId, startDate, endDate);
+        List<Calendars> calendarsList = calendarsRepository.findByUserIdAndDateBetween(member, startDate, endDate);
 
         List<CalendarsHomeDayDto> calendarsResponse = new ArrayList<>();
 

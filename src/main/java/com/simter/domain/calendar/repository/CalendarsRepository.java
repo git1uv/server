@@ -1,6 +1,7 @@
 package com.simter.domain.calendar.repository;
 
 import com.simter.domain.calendar.entity.Calendars;
+import com.simter.domain.member.entity.Member;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,6 @@ public interface CalendarsRepository extends JpaRepository<Calendars, Long> {
 
     Optional<Calendars> findById(@NotNull Long id);
 
-    List<Calendars> findByUserIdAndDateBetween(@NotNull Long userId, @NotNull LocalDate startDate, @NotNull LocalDate endDate);
+    List<Calendars> findByUserIdAndDateBetween(@NotNull Member member, @NotNull LocalDate startDate, @NotNull LocalDate endDate);
 
 }
