@@ -44,7 +44,10 @@ public enum ErrorStatus implements BaseCode {
     MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "편지가 없습니다."),
 
     //챗봇 관련 에러
-    CHATBOT_SESSION_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHATBOT4001", "해당 챗봇 세션이 없습니다");
+    CHATBOT_SESSION_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHATBOT4001", "해당 챗봇 세션이 없습니다"),
+
+    //달력 관련 에러
+    DAILY_CALENDAR_NOT_FOUND(HttpStatus.BAD_REQUEST, "CALENDAR4001", "일일 달력 데이터가 없습니다");
 
     private final HttpStatus httpStatus;
     private final String code;

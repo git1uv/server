@@ -2,6 +2,7 @@ package com.simter.domain.calendar.dto;
 
 import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import lombok.AccessLevel;
@@ -45,8 +46,7 @@ public class CalendarsResponseDto {
         private Long id;
         private String title;
         private String chatbotType;
-        private Time time;
-
+        private LocalDateTime time;
     }
 
     @Builder
