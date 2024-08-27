@@ -85,10 +85,7 @@ public class CalendarsService {
     }
 
     //한줄 일기 업데이트
-    public void updateDiary(String email, Long calendarId, String content) {
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
+    public void updateDiary(Long calendarId, String content) {
         Calendars calendar = calendarsRepository.findById(calendarId)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.CALENDAR_NOT_FOUND));
 
@@ -97,10 +94,7 @@ public class CalendarsService {
     }
 
     //해결책 완료 여부 업데이트
-    public void updateSolution(String email, Long solutionId, boolean isCompleted) {
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
+    public void updateSolution(Long solutionId, boolean isCompleted) {
         Solution solution = solutionRepository.findById(solutionId)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.SOLUTION_NOT_FOUND));
 
@@ -109,10 +103,7 @@ public class CalendarsService {
     }
 
     //해결책 삭제
-    public void deleteSolution(String email, Long solutionId) {
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
+    public void deleteSolution(Long solutionId) {
         Solution solution = solutionRepository.findById(solutionId)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.SOLUTION_NOT_FOUND));
 
@@ -120,10 +111,7 @@ public class CalendarsService {
     }
 
     //감정 업데이트
-    public void updateEmotion(String email, Long calendarId, String emotion) {
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
+    public void updateEmotion(Long calendarId, String emotion) {
         Calendars calendar = calendarsRepository.findById(calendarId)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.CALENDAR_NOT_FOUND));
 

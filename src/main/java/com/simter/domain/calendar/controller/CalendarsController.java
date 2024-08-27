@@ -44,40 +44,30 @@ public class CalendarsController {
 
     @Operation(summary = "한줄 일기 저장 API", description = "오늘의 한줄일기를 작성하고 저장하는 api")
     @PatchMapping("/api/v1/calendar/today/{calendarId}/diary")
-    public ApiResponse<Void> updateDiary(HttpServletRequest request, @PathVariable Long calendarId,
-        @RequestBody String content) {
-        JwtTokenDto token = jwtTokenProvider.resolveToken(request);
-        String email = jwtTokenProvider.getEmail(token.getAccessToken());
-        calendarsService.updateDiary(email, calendarId, content);
+    public ApiResponse<Void> updateDiary(@PathVariable Long calendarId, @RequestBody String content) {
+        calendarsService.updateDiary(calendarId, content);
         return ApiResponse.onSuccess(null);
     }
 
     @Operation(summary = "해결책 완료 여부 변경 API", description = "오늘의 해결책 1개를 완료/미완료 시키는 api")
     @PatchMapping("/api/v1/calendar/today/solution/{solutionId}/done")
-    public ApiResponse<Void> updateSolution(HttpServletRequest request, @PathVariable Long solutionId,
+    public ApiResponse<Void> updateSolution(@PathVariable Long solutionId,
         @RequestBody boolean isCompleted) {
-        JwtTokenDto token = jwtTokenProvider.resolveToken(request);
-        String email = jwtTokenProvider.getEmail(token.getAccessToken());
-        calendarsService.updateSolution(email, solutionId, isCompleted);
+        calendarsService.updateSolution(solutionId, isCompleted);
         return ApiResponse.onSuccess(null);
     }
 
     @Operation(summary = "해결책 삭제 API", description = "오늘의 해결책 1개를 삭제시키는 api")
     @DeleteMapping("/api/v1/calendar/today/solution/{solutionId}/delete")
-    public ApiResponse<Void> deleteSolution(HttpServletRequest request, @PathVariable Long solutionId) {
-        JwtTokenDto token = jwtTokenProvider.resolveToken(request);
-        String email = jwtTokenProvider.getEmail(token.getAccessToken());
-        calendarsService.deleteSolution(email, solutionId);
+    public ApiResponse<Void> deleteSolution(@PathVariable Long solutionId) {
+        calendarsService.deleteSolution(solutionId);
         return ApiResponse.onSuccess(null);
     }
 
     @Operation(summary = "감정 기록 API", description = "오늘의 감정을 기록하는 api")
-    @PatchMapping("/api/v1/calendar/today/:calendarId/emotion")
-    public ApiResponse<Void> updateEmotion(HttpServletRequest request, @PathVariable Long calendarId,
-        @RequestBody String emotion) {
-        JwtTokenDto token = jwtTokenProvider.resolveToken(request);
-        String email = jwtTokenProvider.getEmail(token.getAccessToken());
-        calendarsService.updateEmotion(email, calendarId, emotion);
+    @PatchMapping("/api/v1/calendar/today/{calendarId}/emotion")
+    public ApiResponse<Void> updateEmotion(@PathVariable Long calendarId, @RequestBody String emotion) {
+        calendarsService.updateEmotion(calendarId, emotion);
         return ApiResponse.onSuccess(null);
     }
 }
