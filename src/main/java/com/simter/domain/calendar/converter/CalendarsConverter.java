@@ -18,15 +18,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CalendarsConverter {
 
-    public static CalendarCounselingLogRepository calendarCounselingLogRepository;
+    private final CalendarCounselingLogRepository calendarCounselingLogRepository;
 
-    public static CalendarsHomeDayDto convertToMonthlyCalendar(Member member, Calendars calendars) {
+    public CalendarsHomeDayDto convertToMonthlyCalendar(Member member, Calendars calendars) {
 
         return CalendarsHomeDayDto.builder()
             .calendarId(calendars.getId())
             .date(calendars.getDate())
             .emotion(calendars.getEmotion())
-            .hasCounseling(calendarCounselingLogRepository.existsByUserIdAndCalendarsDate(member, calendars.getDate()))
+            .hasCounseling(calendarCounselingLogRepository.existsByUserAndCalendarsDate(member, calendars.getDate()))
             .build();
     }
 

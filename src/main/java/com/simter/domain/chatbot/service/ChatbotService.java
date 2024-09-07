@@ -40,7 +40,7 @@ public class ChatbotService {
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         CounselingLog log = CounselingLog.builder()
-                .member(member)
+                .user(member)
                 .chatbotType(chatbotType)
                 .startedAt(LocalDateTime.now())
                 .build();

@@ -7,11 +7,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CounselingLogRepository extends JpaRepository<CounselingLog, Long> {
 
-    List<CounselingLog> findByUserIdAndDate (@NotNull Member member, @NotNull LocalDate date);
+    @Query("SELECT c FROM CounselingLog c WHERE c.user = :member AND DATE(c.startedAt) = :date")
+    List<CounselingLog> findByUserAndDate(@Param("member") Member member, @Param("date") LocalDate date);
+
 
 }

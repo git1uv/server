@@ -2,6 +2,9 @@ package com.simter.domain.calendar.controller;
 
 import com.simter.apiPayload.ApiResponse;
 import com.simter.config.JwtTokenProvider;
+import com.simter.domain.calendar.dto.CalendarsRequestDto.DiaryDto;
+import com.simter.domain.calendar.dto.CalendarsRequestDto.EmotionDto;
+import com.simter.domain.calendar.dto.CalendarsRequestDto.IsCompletedDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDayDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsHomeDayDto;
 import com.simter.domain.calendar.service.CalendarsService;
@@ -21,8 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CalendarsController {
 
-    JwtTokenProvider jwtTokenProvider;
-    CalendarsService calendarsService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final CalendarsService calendarsService;
 
     @Operation(summary = "달력 홈 API", description = "월별로 달력을 가지고 오는 API")
     @GetMapping("/api/v1/calendar/{year}/{month}/home")
@@ -44,7 +47,7 @@ public class CalendarsController {
 
     @Operation(summary = "한줄 일기 저장 API", description = "오늘의 한줄일기를 작성하고 저장하는 api")
     @PatchMapping("/api/v1/calendar/today/{calendarId}/diary")
-    public ApiResponse<Void> updateDiary(@PathVariable Long calendarId, @RequestBody String content) {
+    public ApiResponse<Void> updateDiary(@PathVariable Long calendarId, @RequestBody DiaryDto content) {
         calendarsService.updateDiary(calendarId, content);
         return ApiResponse.onSuccess(null);
     }
@@ -52,7 +55,7 @@ public class CalendarsController {
     @Operation(summary = "해결책 완료 여부 변경 API", description = "오늘의 해결책 1개를 완료/미완료 시키는 api")
     @PatchMapping("/api/v1/calendar/today/solution/{solutionId}/done")
     public ApiResponse<Void> updateSolution(@PathVariable Long solutionId,
-        @RequestBody boolean isCompleted) {
+        @RequestBody IsCompletedDto isCompleted) {
         calendarsService.updateSolution(solutionId, isCompleted);
         return ApiResponse.onSuccess(null);
     }
@@ -66,7 +69,7 @@ public class CalendarsController {
 
     @Operation(summary = "감정 기록 API", description = "오늘의 감정을 기록하는 api")
     @PatchMapping("/api/v1/calendar/today/{calendarId}/emotion")
-    public ApiResponse<Void> updateEmotion(@PathVariable Long calendarId, @RequestBody String emotion) {
+    public ApiResponse<Void> updateEmotion(@PathVariable Long calendarId, @RequestBody EmotionDto emotion) {
         calendarsService.updateEmotion(calendarId, emotion);
         return ApiResponse.onSuccess(null);
     }
