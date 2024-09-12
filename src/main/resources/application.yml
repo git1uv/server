@@ -51,3 +51,6 @@ spring:
       anthropic3:
         chat:
           enabled: true
+  claude:
+    api:
+      key: ${CLAUDE_API_KEY}
