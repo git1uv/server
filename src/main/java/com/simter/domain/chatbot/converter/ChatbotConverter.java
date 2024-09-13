@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 
 public class ChatbotConverter {
 
-    public static ChatbotMessage toUserMessage(CounselingLog counselingLogId, String sender, ClaudeRequestDto request) {
+    public static ChatbotMessage toUserMessage(CounselingLog counselingLogId, ClaudeRequestDto request) {
         return ChatbotMessage.builder()
                 .counselingLog(counselingLogId)
-                .sender(sender)
+                .sender("USER")
                 .content(request.getUserMessage())
                 .build();
     }

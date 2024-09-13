@@ -83,7 +83,7 @@ public class ClaudeAPIService {
                     String messageWithoutEmotion = removeEmotionLine(assistantResponseText);
 
                     // 사용자 메시지와 챗봇 응답을 DB에 저장
-                    ChatbotMessage userMessage = ChatbotConverter.toUserMessage(counselingLog, "USER", request);
+                    ChatbotMessage userMessage = ChatbotConverter.toUserMessage(counselingLog, request);
                     chatbotRepository.save(userMessage);
 
                     ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, messageWithoutEmotion, emotion);
@@ -144,7 +144,7 @@ public class ClaudeAPIService {
         }
     }
 
-    // 감정 라인을 제거한 본문 추출 메소드
+    // 감정 라인을 제거한 본문 추출
     private String removeEmotionLine(String response) {
         int startOfMessage = response.indexOf("\n\n") + 2;
         return response.substring(startOfMessage).trim();
