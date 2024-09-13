@@ -30,7 +30,7 @@ public class ChatbotMessage {
     @Column(nullable = false, length = 100)
     private String sender;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, length = 1000)
     private String content;
 
     @Column(length = 100)
