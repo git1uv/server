@@ -100,10 +100,10 @@ public class ClaudeAPIService {
             case "F":
                 return "너는 심리상담가야. 사용자에게 최대한 공감을 해주고 희망찬 대답을 해줘.";
             case "T":
-                return "현실적인 조언형(T) 대답을 해줘.";
+                return "현실적인 대답을 해줘. 해결책을 나열하지는 말아줘";
             case "H":
             default:
-                return "공감과 현실을 섞은(H) 대답을 해줘.";
+                return "공감을 적당히 한 후에, 현실적인 조언을 조금만 해줘";
         }
     }
 
@@ -117,10 +117,6 @@ public class ClaudeAPIService {
         }
 
         return messages.toString();
-    }
-
-    private String extractAssistantResponse(String response) {
-        return response;
     }
 
     private String extractEmotion(String response) {
@@ -143,7 +139,7 @@ public class ClaudeAPIService {
         } else if (response.contains("사랑")) {
             return "사랑";
         } else {
-            return "기타";  // 감정을 찾지 못한 경우
+            return "기쁨";
         }
     }
 }
