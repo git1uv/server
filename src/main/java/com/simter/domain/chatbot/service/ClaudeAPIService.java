@@ -48,11 +48,11 @@ public class ClaudeAPIService {
         //프롬프트 선택
         String systemPrompt = selectSystemPrompt(chatbotType);
 
-        systemPrompt += "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘: 기쁨, 슬픔, 화남, 놀람, 공포, 혐오, 기대, 신뢰, 사랑.";
+        systemPrompt += "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘: 평온, 웃음, 사랑, 놀람, 슬픔, 불편, 화남, 불안, 피곤, 답변은 600자 이내로 해줘";
 
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
-        String conversationContext = previousMessages + "\nUser: " + request.getUserMessage() + "\nAssistant:";
+        String conversationContext = previousMessages + "과거의 대화를 알려줄게! 이 맥락을 기억해 \nUser: " + request.getUserMessage() + "\nAssistant:";
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "claude-3-5-sonnet-20240620");
@@ -79,17 +79,17 @@ public class ClaudeAPIService {
                     JSONObject jsonResponse = new JSONObject(response);
                     JSONArray contentArray = jsonResponse.getJSONArray("content");
                     String assistantResponseText = contentArray.getJSONObject(0).getString("text");
-
                     String emotion = extractEmotion(assistantResponseText);
+                    String messageWithoutEmotion = removeEmotionLine(assistantResponseText);
 
                     // 사용자 메시지와 챗봇 응답을 DB에 저장
-                    ChatbotMessage userMessage = ChatbotConverter.toUserMessage(counselingLog, "USER", request, emotion);
+                    ChatbotMessage userMessage = ChatbotConverter.toUserMessage(counselingLog, "USER", request);
                     chatbotRepository.save(userMessage);
 
-                    ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, assistantResponseText, emotion);
+                    ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, messageWithoutEmotion, emotion);
                     chatbotRepository.save(assistantMessage);
 
-                    return new ClaudeResponseDto(emotion, assistantResponseText);
+                    return new ClaudeResponseDto(emotion, messageWithoutEmotion);
                 });
 
     }
@@ -121,26 +121,32 @@ public class ClaudeAPIService {
     }
 
     private String extractEmotion(String response) {
-        if (response.contains("기쁨")) {
-            return "기쁨";
+        if (response.contains("평온")) {
+            return "평온";
         } else if (response.contains("슬픔")) {
             return "슬픔";
-        } else if (response.contains("화남")) {
-            return "화남";
-        } else if (response.contains("놀람")) {
-            return "놀람";
-        } else if (response.contains("공포")) {
-            return "공포";
-        } else if (response.contains("혐오")) {
-            return "혐오";
-        } else if (response.contains("기대")) {
-            return "기대";
-        } else if (response.contains("신뢰")) {
-            return "신뢰";
+        } else if (response.contains("웃음")) {
+            return "웃음";
         } else if (response.contains("사랑")) {
             return "사랑";
+        } else if (response.contains("놀람")) {
+            return "놀람";
+        } else if (response.contains("피곤")) {
+            return "피곤";
+        } else if (response.contains("불편")) {
+            return "불편";
+        } else if (response.contains("화남")) {
+            return "화남";
+        } else if (response.contains("불안")) {
+            return "불안";
         } else {
-            return "기쁨";
+            return "평온";
         }
+    }
+
+    // 감정 라인을 제거한 본문 추출 메소드
+    private String removeEmotionLine(String response) {
+        int startOfMessage = response.indexOf("\n\n") + 2;
+        return response.substring(startOfMessage).trim();
     }
 }
