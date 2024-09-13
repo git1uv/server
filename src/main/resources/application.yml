@@ -46,3 +46,11 @@ spring:
           timeout: 5000
           starttls:
             enable: true
+  ai:
+    bedrock:
+      anthropic3:
+        chat:
+          enabled: true
+  claude:
+    api:
+      key: ${CLAUDE_API_KEY}

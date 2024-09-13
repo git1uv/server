@@ -23,14 +23,10 @@ public class ChatbotMessage {
     @JoinColumn(name = "counseling_log_id")
     private CounselingLog counselingLog;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private Member member;
-
     @Column(nullable = false, length = 100)
     private String sender;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, length = 1000)
     private String content;
 
     @Column(length = 100)

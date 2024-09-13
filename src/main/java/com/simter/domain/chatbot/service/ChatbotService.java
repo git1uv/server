@@ -55,4 +55,6 @@ public class ChatbotService {
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
         return log.getSummary();
     }
+
+
 }
