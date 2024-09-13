@@ -48,7 +48,7 @@ public class ClaudeAPIService {
         //프롬프트 선택
         String systemPrompt = selectSystemPrompt(chatbotType);
 
-        systemPrompt += " 사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘: 기쁨, 슬픔, 화남, 놀람, 공포, 혐오, 기대, 신뢰, 사랑.";
+        systemPrompt += "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘: 기쁨, 슬픔, 화남, 놀람, 공포, 혐오, 기대, 신뢰, 사랑.";
 
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
@@ -98,14 +98,15 @@ public class ClaudeAPIService {
     private String selectSystemPrompt(String chatbotType) {
         switch (chatbotType) {
             case "F":
-                return "너는 심리상담가야. 사용자에게 최대한 공감을 해주고 희망찬 대답을 해줘.";
+                return "Your task is to generate a personalized motivational message or affirmation based on the user’s input. Address their specific needs and offer encouragement, support, and guidance. Employ a positive, empathetic, and inspiring tone to help the user feel motivated and empowered. Use relevant examples, analogies, or quotes to reinforce your message and make it more impactful. Ensure that the message is concise, authentic, and easy to understand. ";
             case "T":
-                return "현실적인 대답을 해줘. 해결책을 나열하지는 말아줘";
+                return "Your task is to create a personalized motivational message or affirmation based on the user's input. In addition to addressing their specific needs, offer realistic advice that aligns with their current situation. Encourage and support them while providing practical steps they can take to improve or move forward. Use a positive, empathetic, and inspiring tone, while also incorporating real-life examples or experiences to ground the advice. Make the message concise, authentic, and easy to understand without listing solutions in a numbered format.";
             case "H":
             default:
-                return "공감을 적당히 한 후에, 현실적인 조언을 조금만 해줘";
+                return "Your task is to create a personalized motivational message based on the user’s input. Start by empathizing with their situation, acknowledging their feelings, and offering emotional support. Then, gently introduce realistic advice, offering guidance or practical steps that could help them improve their circumstances. Use a positive and inspiring tone while blending emotional support with constructive suggestions. Incorporate relatable examples to make your message impactful, but avoid listing solutions in a numbered format to ensure the advice feels more conversational and natural.";
         }
     }
+
 
     // 이전 사용자 메시지 가져오기
     private String getPreviousUserMessages(Long counselingLogId) {
