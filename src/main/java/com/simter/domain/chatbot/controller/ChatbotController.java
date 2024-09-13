@@ -2,16 +2,20 @@ package com.simter.domain.chatbot.controller;
 
 import com.simter.apiPayload.ApiResponse;
 import com.simter.config.JwtTokenProvider;
+import com.simter.domain.chatbot.dto.ClaudeRequestDto;
+import com.simter.domain.chatbot.dto.ClaudeResponseDto;
 import com.simter.domain.chatbot.dto.DefaultChatbotRequestDto;
 import com.simter.domain.chatbot.dto.SelectChatbotRequestDto;
 import com.simter.domain.chatbot.dto.SelectChatbotResponseDto;
 import com.simter.domain.chatbot.service.ChatbotService;
+import com.simter.domain.chatbot.service.ClaudeAPIService;
 import com.simter.domain.mail.dto.MailDeleteRequestDto;
 import com.simter.domain.member.dto.JwtTokenDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +24,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @Tag(name = "챗봇 API", description = "챗봇 변경, 챗봇과의 대화 API")
 @RestController
@@ -30,6 +36,7 @@ public class ChatbotController {
 
     private final ChatbotService chatbotService;
     private final JwtTokenProvider jwtTokenProvider;
+    private ClaudeAPIService claudeApiService;
 
     //Default 챗봇 변경 API(PATCH)
     @Operation(summary = "Default 챗봇 변경", description = "챗봇 유형을 변경하는 API")
@@ -55,6 +62,12 @@ public class ChatbotController {
         JwtTokenDto token = jwtTokenProvider.resolveToken(request);
         String email = jwtTokenProvider.getEmail(token.getAccessToken());
         SelectChatbotResponseDto response = chatbotService.selectChatbot(email, selectChatbotRequestDto.getChatbotType());
+        return ApiResponse.onSuccess(response);
+    }
+    @Operation(summary = "챗봇과의 대화 API", description = "챗봇 대화 API")
+    @PostMapping("/chatting")
+    public ApiResponse<ClaudeResponseDto> chatting(@RequestBody ClaudeRequestDto requestDto, @RequestParam Long counselingLogId) {
+        ClaudeResponseDto response = claudeApiService.chatWithClaude(requestDto, counselingLogId);
         return ApiResponse.onSuccess(response);
     }
 }

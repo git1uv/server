@@ -13,6 +13,4 @@ import lombok.NoArgsConstructor;
 public class ClaudeResponseDto {
     String emotion;
     String conversation;
-
-
 }

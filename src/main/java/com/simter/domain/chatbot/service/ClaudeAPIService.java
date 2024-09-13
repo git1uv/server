@@ -1,12 +1,11 @@
 package com.simter.domain.chatbot.service;
 
-import lombok.Value;
+import com.simter.domain.chatbot.dto.ClaudeRequestDto;
+import com.simter.domain.chatbot.dto.ClaudeResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import io.github.cdimascio.dotenv.Dotenv;
-
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,12 +13,9 @@ import java.util.Map;
 public class ClaudeAPIService {
 
     private final Dotenv dotenv = Dotenv.load();
-
     private final WebClient webClient;
-
     private final String API_KEY= dotenv.get("CLAUDE_API_KEY");
     private final String CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
-
 
     private String conversationContext = "";
 
@@ -27,9 +23,9 @@ public class ClaudeAPIService {
         this.webClient = webClientBuilder.build();
     }
 
-    public Mono<String> chatWithClaude(String userMessage) {
+    public ClaudeResponseDto chatWithClaude(ClaudeRequestDto request) {
         // 이전 대화 상태에 새 메시지 추가
-        conversationContext += "먼저, 사용자가 요청한 메시지에 대한 감정을 단어로 적어줘. 이후 공감형(F) 답변을 적어줘. \nUser: " + userMessage + "\nAssistant:";
+        conversationContext += "먼저, 사용자가 요청한 메시지에 대한 감정을 단어로 적어줘. 이후 공감형(F) 답변을 적어줘. \nUser: " + request.getUserMessage() +"\nAssistant:";
 
         // 요청 본문을 JSON 형식으로 생성
         Map<String, Object> requestBody = new HashMap<>();
@@ -39,7 +35,7 @@ public class ClaudeAPIService {
         // "messages" 필드를 설정 (role과 content로 메시지 전달)
         Map<String, Object> userMessageContent = new HashMap<>();
         userMessageContent.put("role", "user");
-        userMessageContent.put("content", userMessage);
+        userMessageContent.put("content", request.getUserMessage());
 
         // 메시지 리스트에 사용자 메시지 추가
         requestBody.put("messages", new Object[]{userMessageContent});
