@@ -1,12 +1,14 @@
 package com.simter.domain.chatbot.controller;
 
 import com.simter.apiPayload.ApiResponse;
+import com.simter.apiPayload.code.status.SuccessStatus;
 import com.simter.config.JwtTokenProvider;
+import com.simter.domain.chatbot.dto.ChatbotRequestDto.DefaultChatbotRequestDto;
+import com.simter.domain.chatbot.dto.ChatbotRequestDto.SelectChatbotRequestDto;
+import com.simter.domain.chatbot.dto.ChatbotResponseDto.GetChatbotTypeResponseDto;
+import com.simter.domain.chatbot.dto.ChatbotResponseDto.SelectChatbotResponseDto;
 import com.simter.domain.chatbot.dto.ClaudeRequestDto;
 import com.simter.domain.chatbot.dto.ClaudeResponseDto;
-import com.simter.domain.chatbot.dto.DefaultChatbotRequestDto;
-import com.simter.domain.chatbot.dto.SelectChatbotRequestDto;
-import com.simter.domain.chatbot.dto.SelectChatbotResponseDto;
 import com.simter.domain.chatbot.service.ChatbotService;
 import com.simter.domain.chatbot.service.ClaudeAPIService;
 import com.simter.domain.member.dto.JwtTokenDto;
@@ -46,8 +48,8 @@ public class ChatbotController {
     //Default 챗봇 조회 API(GET)
     @Operation(summary = "Default 챗봇 조회", description = "사용자의 default 챗봇을 조회하는 API")
     @GetMapping("/{userId}")
-    public ApiResponse<String> getDefaultChatbot(@PathVariable Long userId) {
-        String response = chatbotService.getDefaultChatbot(userId);
+    public ApiResponse<GetChatbotTypeResponseDto> getDefaultChatbot(@PathVariable Long userId) {
+        GetChatbotTypeResponseDto response = chatbotService.getDefaultChatbot(userId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -62,10 +64,20 @@ public class ChatbotController {
         return ApiResponse.onSuccess(response);
     }
 
-    @Operation(summary = "챗봇과의 대화 API", description = "챗봇 대화 API")
+    @Operation(summary = "챗봇과의 대화 API", description = "챗봇 채팅 API")
     @PostMapping("/chatting")
     public Mono<ApiResponse<ClaudeResponseDto>> chatting(@RequestBody ClaudeRequestDto requestDto, @RequestParam Long counselingLogId) {
         return claudeAPIService.chatWithClaude(requestDto, counselingLogId)
-                .map(response -> ApiResponse.onSuccess(response));
+                .map(response -> ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_CHATTING, response);
     }
+
+    @Operation(summary = "챗봇 종료", description = "특정 챗봇 세션을 종료하는 API")
+    @GetMapping("/exit/{counselingLogId}")
+    public ApiResponse exitChatbot(
+            @PathVariable Long counselingLogId) {
+        return ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_SESSION_END, chatbotService.exitChatbot(counselingLogId));
+    }
+
+
+
 }

@@ -2,8 +2,11 @@ package com.simter.domain.chatbot.converter;
 
 import com.simter.domain.chatbot.dto.ClaudeRequestDto;
 import com.simter.domain.chatbot.dto.ClaudeResponseDto;
+import com.simter.domain.chatbot.dto.CounselingResponseDto;
+import com.simter.domain.chatbot.dto.CounselingResponseDto.CounselingDto;
 import com.simter.domain.chatbot.entity.ChatbotMessage;
 import com.simter.domain.chatbot.entity.CounselingLog;
+import com.simter.domain.chatbot.entity.Solution;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -34,10 +37,21 @@ public class ChatbotConverter {
 
     public static ClaudeResponseDto toClaudeResponseDto(ChatbotMessage chatbotMessage) {
         return ClaudeResponseDto.builder()
-                .counselingId(chatbotMessage.getCounselingLog().getId())
+                .counselingLogId(chatbotMessage.getCounselingLog().getId())
                 .emotion(chatbotMessage.getEmotion())
                 .message(chatbotMessage.getContent())
                 .createdAt(formatDateTime(chatbotMessage.getCreatedAt()))
+                .build();
+    }
+
+    public static CounselingResponseDto.CounselingDto toCounselingDto(CounselingLog counselingLog) {
+        return CounselingDto.builder()
+                .counselingLogId(counselingLog.getId())
+                .chatbotType(counselingLog.getChatbotType())
+                .title(counselingLog.getTitle())
+                .summary(counselingLog.getSummary())
+                .suggestion(counselingLog.getSuggestion())
+                .solutions(Solution.getSolutions())
                 .build();
     }
 

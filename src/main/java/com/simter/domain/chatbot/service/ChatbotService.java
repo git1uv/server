@@ -2,7 +2,11 @@ package com.simter.domain.chatbot.service;
 
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
-import com.simter.domain.chatbot.dto.SelectChatbotResponseDto;
+import com.simter.domain.chatbot.converter.ChatbotConverter;
+import com.simter.domain.chatbot.dto.ChatbotResponseDto;
+import com.simter.domain.chatbot.dto.ChatbotResponseDto.GetChatbotTypeResponseDto;
+import com.simter.domain.chatbot.dto.ChatbotResponseDto.SelectChatbotResponseDto;
+import com.simter.domain.chatbot.dto.CounselingResponseDto;
 import com.simter.domain.chatbot.entity.CounselingLog;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
 import com.simter.domain.member.entity.Member;
@@ -28,10 +32,10 @@ public class ChatbotService {
     }
 
     //사용자의 default 챗봇 조회
-    public String getDefaultChatbot(Long memberId) {
+    public GetChatbotTypeResponseDto getDefaultChatbot(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        return member.getChatbot();
+        return new ChatbotResponseDto.GetChatbotTypeResponseDto(member.getChatbot());
     }
 
     //챗봇 세션을 시작을 시작하고 해당 세션의 챗봇 설정
@@ -54,6 +58,13 @@ public class ChatbotService {
         CounselingLog log = counselingLogRepository.findById(counselingLogId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
         return log.getSummary();
+    }
+
+    //상담일지 끝내기
+    public CounselingResponseDto.CounselingDto exitChatbot(Long counselingLogId) {
+        CounselingLog counselingLoglog = counselingLogRepository.findById(counselingLogId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
+        return ChatbotConverter.toCounselingDto(counselingLoglog);
     }
 
 

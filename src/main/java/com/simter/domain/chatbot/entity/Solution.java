@@ -1,7 +1,6 @@
-package com.simter.domain.solution.entity;
+package com.simter.domain.chatbot.entity;
 
 
-import com.simter.domain.chatbot.entity.CounselingLog;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;

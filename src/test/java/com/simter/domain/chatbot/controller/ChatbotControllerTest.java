@@ -4,21 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.simter.domain.chatbot.dto.SelectChatbotResponseDto;
-import com.simter.domain.chatbot.repository.CounselingLogRepository;
 import com.simter.domain.chatbot.service.ChatbotService;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
-import jakarta.transaction.Transactional;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ChatbotControllerTest {

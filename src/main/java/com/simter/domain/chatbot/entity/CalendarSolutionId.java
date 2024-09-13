@@ -1,4 +1,4 @@
-package com.simter.domain.solution.entity;
+package com.simter.domain.chatbot.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

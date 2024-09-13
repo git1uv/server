@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClaudeResponseDto {
-    Long counselingId;
+    Long counselingLogId;
     String emotion;
     String message;
     String createdAt;
