@@ -26,7 +26,7 @@ import reactor.core.publisher.Mono;
 
 @Tag(name = "챗봇 API", description = "챗봇 변경, 챗봇과의 대화 API")
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/chatbot")
 @RequiredArgsConstructor
 public class ChatbotController {
 
@@ -37,7 +37,7 @@ public class ChatbotController {
 
     //Default 챗봇 변경 API(PATCH)
     @Operation(summary = "Default 챗봇 변경", description = "챗봇 유형을 변경하는 API")
-    @PatchMapping("/chatbot/update/{userId}")
+    @PatchMapping("/update/{userId}")
     public ApiResponse<Void> updateDefaultChatbot(@PathVariable Long userId, @RequestBody DefaultChatbotRequestDto defaultChatbotRequestDto) {
         chatbotService.updateDefaultChatbot(userId, defaultChatbotRequestDto.getChatbot());
         return ApiResponse.onSuccess(null);
@@ -45,7 +45,7 @@ public class ChatbotController {
 
     //Default 챗봇 조회 API(GET)
     @Operation(summary = "Default 챗봇 조회", description = "사용자의 default 챗봇을 조회하는 API")
-    @GetMapping("/chatbot/{userId}")
+    @GetMapping("/{userId}")
     public ApiResponse<String> getDefaultChatbot(@PathVariable Long userId) {
         String response = chatbotService.getDefaultChatbot(userId);
         return ApiResponse.onSuccess(response);
@@ -53,7 +53,7 @@ public class ChatbotController {
 
     //특정 세션의 챗봇 type 설정(PATCH)
     @Operation(summary = "특정 세션의 챗봇 설정 변경", description = "사용자의 세션에 해당하는 챗봇 타입을 설정하고 새로운 상담 일지를 생성하는 API")
-    @PostMapping("/chatbot/session")
+    @PostMapping("/session")
     public ApiResponse<SelectChatbotResponseDto> createChatbotSession(HttpServletRequest request, @RequestBody SelectChatbotRequestDto selectChatbotRequestDto) {
 
         JwtTokenDto token = jwtTokenProvider.resolveToken(request);

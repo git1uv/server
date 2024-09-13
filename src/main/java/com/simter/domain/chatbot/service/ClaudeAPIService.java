@@ -89,7 +89,7 @@ public class ClaudeAPIService {
                     ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, messageWithoutEmotion, emotion);
                     chatbotRepository.save(assistantMessage);
 
-                    return new ClaudeResponseDto(emotion, messageWithoutEmotion);
+                    return ChatbotConverter.toClaudeResponseDto(assistantMessage);
                 });
 
     }
