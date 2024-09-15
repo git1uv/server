@@ -19,6 +19,7 @@ public class CounselingResponseDto {
         private String summary;
         private String suggestion;
         private List<Solution> solutions;
+        private String endedAt;
     }
 
     @Data
