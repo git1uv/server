@@ -31,6 +31,7 @@ public class Calendars {
     private String emotion;
 
     @Column(length = 300)
+    @ColumnDefault("")
     private String diary;
 
     public void setDiary(String content) {

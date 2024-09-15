@@ -10,6 +10,7 @@ import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDayCounselin
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDayDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDaySolutionDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsHomeDayDto;
+import com.simter.domain.calendar.dto.CalendarsResponseDto.NewCalendarsDto;
 import com.simter.domain.calendar.entity.Calendars;
 import com.simter.domain.calendar.repository.CalendarsRepository;
 import com.simter.domain.chatbot.entity.CounselingLog;
@@ -87,16 +88,27 @@ public class CalendarsService {
                 .solution(solutionsResponse)
                 .build();
         } else {
-            throw new ErrorHandler(ErrorStatus.DAILY_CALENDAR_NOT_FOUND);
+            NewCalendarsDto newCalendarsDto = NewCalendarsDto.builder()
+                .userId(member)
+                .date(date)
+                .build();
+            Calendars newCalendar = CalendarsConverter.convertToEntity(newCalendarsDto);
+            Calendars savedCalendar = calendarsRepository.save(newCalendar);
+            return CalendarsDayDto.builder()
+                .calendarId(savedCalendar.getId())
+                .diary(savedCalendar.getDiary())
+                .emotion(savedCalendar.getEmotion())
+                .date(date)
+                .counselingLog(new ArrayList<>())
+                .solution(new ArrayList<>())
+                .build();
         }
-
     }
 
     //한줄 일기 업데이트
     public void updateDiary(Long calendarId, DiaryDto content) {
         Calendars calendar = calendarsRepository.findById(calendarId)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.CALENDAR_NOT_FOUND));
-
         calendar.setDiary(content.getContent());
         calendarsRepository.save(calendar);
     }

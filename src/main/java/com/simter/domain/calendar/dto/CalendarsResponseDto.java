@@ -1,5 +1,6 @@
 package com.simter.domain.calendar.dto;
 
+import com.simter.domain.member.entity.Member;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class CalendarsResponseDto {
         private LocalDate date;
         private String emotion;
         private Boolean hasCounseling;
+        private String chatbotType;
     }
 
     @Builder
@@ -59,4 +61,14 @@ public class CalendarsResponseDto {
         private boolean isCompleted;
 
     }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class NewCalendarsDto {
+        private Member userId;
+        private LocalDate date;
+    }
+
 }
