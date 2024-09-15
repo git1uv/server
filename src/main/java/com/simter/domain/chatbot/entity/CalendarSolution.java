@@ -1,4 +1,4 @@
-package com.simter.domain.solution.entity;
+package com.simter.domain.chatbot.entity;
 
 import com.simter.domain.calendar.entity.Calendars;
 import jakarta.persistence.*;

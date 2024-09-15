@@ -2,7 +2,6 @@ package com.simter.domain.chatbot.repository;
 
 import com.simter.domain.chatbot.entity.CounselingLog;
 import com.simter.domain.member.entity.Member;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;

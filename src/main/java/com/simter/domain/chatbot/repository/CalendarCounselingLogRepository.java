@@ -3,6 +3,7 @@ package com.simter.domain.chatbot.repository;
 import com.simter.domain.chatbot.entity.CalendarCounselingLog;
 import com.simter.domain.chatbot.entity.CalendarCounselingLogId;
 import com.simter.domain.member.entity.Member;
+import java.time.LocalDate;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
