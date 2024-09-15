@@ -2,11 +2,9 @@ package com.simter.domain.calendar.entity;
 
 
 import com.simter.domain.member.entity.Member;
-
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDate;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 
@@ -33,11 +31,14 @@ public class Calendars {
     private String emotion;
 
     @Column(length = 300)
+    @ColumnDefault("")
     private String diary;
 
+    public void setDiary(String content) {
+        this.diary = content;
+    }
 
-
-
-
-
+    public void setEmotion(String emotion) {
+        this.emotion = emotion;
+    }
 }
