@@ -110,7 +110,7 @@ public class ClaudeAPIService {
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
         String conversationContext = previousMessages
-                + "이 대화를 각각 300자 이내로 요약해줘. 제목은 30자 이내야.사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. 답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~ ";
+                + "이 대화를 각각 300자 이내로 요약해줘. 제목은 16자 이내야.사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. 답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~ ";
 
         // 프롬프트 작성
         String systemPrompt = "너의 임무는 아래 대화를 요약해서 사용자에게 보여주는 것이다. " +
@@ -204,19 +204,25 @@ public class ClaudeAPIService {
         startIndex += "추천 행동 :".length();
         String actionsText = response.substring(startIndex).trim();
 
-        String[] actionLines = actionsText.split("\n");
+        // 각 줄을 개행(\n) 기준으로 분리
+        String[] actionLines = actionsText.split("\\n");
+
+        // 각 행동을 처리
         for (String line : actionLines) {
-            int dotIndex = line.indexOf(". ");
-            if (dotIndex != -1 && dotIndex + 2 < line.length()) {
-                String action = line.substring(dotIndex + 2).trim();
+            // 숫자로 시작하는 포맷 (예: "1. 가벼운 스트레칭" 같은 형식) 처리
+            if (line.matches("\\d+\\.\\s.*")) {
+                String action = line.substring(line.indexOf(". ") + 2).trim(); // 숫자와 마침표, 공백 제거 후 추출
                 if (!action.isEmpty()) {
-                    actions.add(action);
+                    actions.add(action);  // 비어있지 않으면 리스트에 추가
                 }
             }
             if (actions.size() == 3) break; // 최대 3개만 추가
         }
+
         return actions;
     }
+
+
 
 
 
