@@ -9,6 +9,8 @@ import com.simter.domain.chatbot.entity.CounselingLog;
 import com.simter.domain.chatbot.entity.Solution;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ChatbotConverter {
 
@@ -44,6 +46,28 @@ public class ChatbotConverter {
                 .build();
     }
 
+    public static CounselingLog toCounselingLog(String title, String userSummary, String assistantSummary) {
+        return CounselingLog.builder()
+                .title(title)
+                .summary(userSummary)
+                .suggestion(assistantSummary)
+                .endedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public static CounselingResponseDto.Solution toSolutionDto(Solution solution) {
+        return CounselingResponseDto.Solution.builder()
+                .solutionId(solution.getId())
+                .content(solution.getContent())
+                .build();
+    }
+
+    public static List<CounselingResponseDto.Solution> toSolutionDtoList(List<Solution> solutions) {
+        return solutions.stream()
+                .map(ChatbotConverter::toSolutionDto)  // 변환 함수 호출
+                .collect(Collectors.toList());
+    }
+
     public static CounselingResponseDto.CounselingDto toCounselingDto(CounselingLog counselingLog) {
         return CounselingDto.builder()
                 .counselingLogId(counselingLog.getId())
@@ -51,8 +75,34 @@ public class ChatbotConverter {
                 .title(counselingLog.getTitle())
                 .summary(counselingLog.getSummary())
                 .suggestion(counselingLog.getSuggestion())
-                .solutions(Solution.getSolutions())
+                //.solutions(toSolutionDtoList(solutions))
                 .build();
     }
+
+    public static CounselingLog updateCounselingLog(CounselingLog existingLog, String title, String userSummary, String assistantSummary) {
+        return CounselingLog.builder()
+                .id(existingLog.getId()) // 기존 id 유지
+                .startedAt(existingLog.getStartedAt()) // 기존 startedAt 유지
+                .member(existingLog.getMember()) // 기존 사용자 정보 유지
+                .chatbotType(existingLog.getChatbotType()) // 기존 chatbot_type 유지
+                .title(title) // 새로운 title
+                .summary(userSummary) // 새로운 summary
+                .suggestion(assistantSummary) // 새로운 suggestion
+                .endedAt(LocalDateTime.now()) // 새로운 endedAt 값
+                .build();
+    }
+
+    public static Solution createSolution(CounselingLog counselingLog, String content) {
+        return Solution.builder()
+                .content(content)
+                .isCompleted(false)
+                .counselingLog(counselingLog)
+                .build();
+    }
+
+
+
+
+
 
 }

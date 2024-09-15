@@ -62,9 +62,9 @@ public class ChatbotService {
 
     //상담일지 끝내기
     public CounselingResponseDto.CounselingDto exitChatbot(Long counselingLogId) {
-        CounselingLog counselingLoglog = counselingLogRepository.findById(counselingLogId)
+        CounselingLog counselinglog = counselingLogRepository.findById(counselingLogId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
-        return ChatbotConverter.toCounselingDto(counselingLoglog);
+        return ChatbotConverter.toCounselingDto(counselinglog);
     }
 
 
