@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 public class CalendarsConverter {
 
     private final CalendarCounselingLogRepository calendarCounselingLogRepository;
-    private final CalendarsResponseDto
 
     public CalendarsHomeDayDto convertToMonthlyCalendar(Member member, Calendars calendars) {
         Optional<CounselingLog> counselingLog = Optional.ofNullable(
