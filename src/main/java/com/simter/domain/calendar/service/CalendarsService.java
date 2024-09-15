@@ -79,14 +79,7 @@ public class CalendarsService {
                     solutionsResponse.add(CalendarsConverter.convertSolutionToDailyCalendar(solution));
                 }
             }
-            return CalendarsDayDto.builder()
-                .calendarId(calendar.get().getId())
-                .diary(calendar.get().getDiary())
-                .emotion(calendar.get().getEmotion())
-                .date(date)
-                .counselingLog(counselingLogsResponse)
-                .solution(solutionsResponse)
-                .build();
+            return CalendarsConverter.convertToDailyCalendar(calendar, date, solutionsResponse, counselingLogsResponse);
         } else {
             NewCalendarsDto newCalendarsDto = NewCalendarsDto.builder()
                 .userId(member)
@@ -94,14 +87,7 @@ public class CalendarsService {
                 .build();
             Calendars newCalendar = CalendarsConverter.convertToEntity(newCalendarsDto);
             Calendars savedCalendar = calendarsRepository.save(newCalendar);
-            return CalendarsDayDto.builder()
-                .calendarId(savedCalendar.getId())
-                .diary(savedCalendar.getDiary())
-                .emotion(savedCalendar.getEmotion())
-                .date(date)
-                .counselingLog(new ArrayList<>())
-                .solution(new ArrayList<>())
-                .build();
+            return CalendarsConverter.convertToDailyCalendar(Optional.of(savedCalendar), date, new ArrayList<>(), new ArrayList<>());
         }
     }
 

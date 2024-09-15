@@ -1,6 +1,8 @@
 package com.simter.domain.calendar.converter;
 
+import com.simter.domain.calendar.dto.CalendarsResponseDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDayCounselingLogDto;
+import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDayDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDaySolutionDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsHomeDayDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.NewCalendarsDto;
@@ -9,6 +11,8 @@ import com.simter.domain.chatbot.entity.CounselingLog;
 import com.simter.domain.chatbot.repository.CalendarCounselingLogRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.solution.entity.Solution;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Component;
 public class CalendarsConverter {
 
     private final CalendarCounselingLogRepository calendarCounselingLogRepository;
+    private final CalendarsResponseDto
 
     public CalendarsHomeDayDto convertToMonthlyCalendar(Member member, Calendars calendars) {
         Optional<CounselingLog> counselingLog = Optional.ofNullable(
@@ -63,6 +68,18 @@ public class CalendarsConverter {
         return Calendars.builder()
             .userId(newCalendarsDto.getUserId())
             .date(newCalendarsDto.getDate())
+            .build();
+    }
+
+    public static CalendarsDayDto convertToDailyCalendar(Optional<Calendars> calendar, LocalDate date, List<CalendarsDaySolutionDto> solutions,
+    List<CalendarsDayCounselingLogDto> counselingLog) {
+        return CalendarsDayDto.builder()
+            .calendarId(calendar.get().getId())
+            .diary(calendar.get().getDiary())
+            .emotion(calendar.get().getEmotion())
+            .date(date)
+            .counselingLog(counselingLog)
+            .solution(solutions)
             .build();
     }
 }
