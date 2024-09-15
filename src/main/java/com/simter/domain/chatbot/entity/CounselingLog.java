@@ -23,7 +23,7 @@ public class CounselingLog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Member member;
+    private Member user;
 
     @Column(nullable = false, length = 100)
     private String chatbotType;
@@ -48,7 +48,7 @@ public class CounselingLog {
 
 
     public void setMember(Long memberId) {
-        this.member = member;
+        this.user.setId(memberId);
     }
 
     public void setChatbotType(String chatbotType) {
