@@ -29,10 +29,10 @@ public class CounselingLog {
     private String chatbotType;
 
     @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime startedAt;
+    @Column(nullable = true)
+    private LocalDateTime startedAt = LocalDateTime.now();
 
-    @Column(updatable = false)
+    @Column(nullable = true)
     private LocalDateTime endedAt;
 
     @Column(length = 500)

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -65,7 +64,7 @@ public class ClaudeAPIService {
                 .bodyToMono(String.class);
     }
 
-    // Claude와 대화하는 메서드
+    // Claude 채팅 서비스
     @Transactional
     public Mono<ClaudeResponseDto> chatWithClaude(ClaudeRequestDto request, Long counselingLogId) {
         CounselingLog counselingLog = counselingLogRepository.findById(counselingLogId)

@@ -72,12 +72,6 @@ public class ChatbotController {
                 .map(response -> ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_CHATTING, response));
     }
 
-    /*@Operation(summary = "챗봇 종료", description = "특정 챗봇 세션을 종료하는 API")
-    @GetMapping("/exit/{counselingLogId}")
-    public ApiResponse exitChatbot(
-            @PathVariable Long counselingLogId) {
-        return ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_SESSION_END, chatbotService.exitChatbot(counselingLogId));
-    }*/
     @Operation(summary = "챗봇과의 대화 종료", description = "채팅 종료 API")
     @GetMapping("/exit")
     public Mono<ApiResponse> chatting(

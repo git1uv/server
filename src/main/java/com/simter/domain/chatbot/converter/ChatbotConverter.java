@@ -46,15 +46,6 @@ public class ChatbotConverter {
                 .build();
     }
 
-    public static CounselingLog toCounselingLog(String title, String userSummary, String assistantSummary) {
-        return CounselingLog.builder()
-                .title(title)
-                .summary(userSummary)
-                .suggestion(assistantSummary)
-                .endedAt(LocalDateTime.now())
-                .build();
-    }
-
     public static CounselingResponseDto.Solution toSolutionDto(Solution solution) {
         return CounselingResponseDto.Solution.builder()
                 .solutionId(solution.getId())
