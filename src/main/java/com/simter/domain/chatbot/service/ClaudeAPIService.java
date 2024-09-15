@@ -6,26 +6,30 @@ import com.simter.domain.chatbot.converter.ChatbotConverter;
 import com.simter.domain.chatbot.dto.ClaudeRequestDto;
 import com.simter.domain.chatbot.dto.ClaudeResponseDto;
 import com.simter.domain.chatbot.dto.CounselingResponseDto;
-import com.simter.domain.chatbot.dto.CounselingResponseDto.Solution;
 import com.simter.domain.chatbot.entity.ChatbotMessage;
 import com.simter.domain.chatbot.entity.CounselingLog;
 import com.simter.domain.chatbot.repository.ChatbotRepository;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
 import com.simter.domain.chatbot.repository.SolutionRepository;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.util.HashMap;
 import java.util.Map;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
 public class ClaudeAPIService {
 
     private final Dotenv dotenv;
@@ -36,17 +40,7 @@ public class ClaudeAPIService {
     private final CounselingLogRepository counselingLogRepository;
     private final SolutionRepository solutionRepository;
 
-    @Autowired
-    public ClaudeAPIService(WebClient.Builder webClientBuilder, ChatbotRepository chatbotRepository, CounselingLogRepository counselingLogRepository, SolutionRepository solutionRepository) {
-        this.webClient = webClientBuilder.build();
-        this.dotenv = Dotenv.load();
-        this.API_KEY = dotenv.get("CLAUDE_API_KEY");
-        this.chatbotRepository = chatbotRepository;
-        this.counselingLogRepository = counselingLogRepository;
-        this.solutionRepository = solutionRepository;
-    }
-
-    // Claude API를 호출하는 공통 메서드
+    // Claude API를 호출
     private Mono<String> callClaudeAPI(String systemPrompt, String conversationContext, int maxTokens) {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "claude-3-5-sonnet-20240620");
@@ -70,7 +64,8 @@ public class ClaudeAPIService {
                 .bodyToMono(String.class);
     }
 
-    // 대화를 위한 chatWithClaude 메서드
+    // Claude와 대화하는 메서드
+    @Transactional
     public Mono<ClaudeResponseDto> chatWithClaude(ClaudeRequestDto request, Long counselingLogId) {
         CounselingLog counselingLog = counselingLogRepository.findById(counselingLogId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
@@ -110,7 +105,7 @@ public class ClaudeAPIService {
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
         String conversationContext = previousMessages
-                + "이 대화를 각각 300자 이내로 요약해줘. 제목은 16자 이내야.사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. 답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~ ";
+                + "사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. 답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~ 전체 요야는 20자, 나머지는 300자 이내로 해줘.";
 
         // 프롬프트 작성
         String systemPrompt = "너의 임무는 아래 대화를 요약해서 사용자에게 보여주는 것이다. " +
@@ -128,26 +123,18 @@ public class ClaudeAPIService {
                     String title = extractTitle(assistantResponseText);
                     String userSummary = extractUserSummary(assistantResponseText); // 사용자 요약 추출
                     String assistantSummary = extractAssistantSummary(assistantResponseText); // 챗봇 요약 추출
-                    System.out.println("assistantResponseText : " + assistantResponseText);
-
-
+                    log.info("assistantResponseText : {} ", assistantResponseText);
 
                     CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)
                             .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
 
                     CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary);
                     counselingLogRepository.save(updatedLog);
-
                     List<String> suggestedActions = extractSuggestedActions(assistantResponseText);
-                    System.out.println("suggestedActions : " + suggestedActions);
-
-
-                    return Mono.just(ChatbotConverter.toCounselingDto(updatedLog));
+                    log.info("suggestedActions : {}", suggestedActions);
+                    return Mono.just(ChatbotConverter.toCounselingDto(updatedLog, suggestedActions));
                 });
     }
-
-
-
 
     // chatbot_type에 맞는 프롬프트 선택
     private String selectSystemPrompt(String chatbotType) {
@@ -176,21 +163,21 @@ public class ClaudeAPIService {
 
     // Claude 응답에서 title 추출
     private String extractTitle(String response) {
-        int startIndex = response.indexOf("전체 요약:") + 6;
+        int startIndex = response.indexOf(OVERALL_SUMMARY) + OVERALL_SUMMARY_OFFSET;
         int endIndex = response.indexOf("\n", startIndex);
         return response.substring(startIndex, endIndex).trim();
     }
 
     // Claude 응답에서 사용자 발언 요약 부분 추출
     private String extractUserSummary(String response) {
-        int startIndex = response.indexOf("사용자 요약:") + 7;
+        int startIndex = response.indexOf(USER_SUMMARY) + USER_SUMMARY_OFFSET;
         int endIndex = response.indexOf("\n", startIndex);
         return response.substring(startIndex, endIndex).trim();
     }
 
     // Claude 응답에서 Claude 발언 요약 부분 추출
     private String extractAssistantSummary(String response) {
-        int startIndex = response.indexOf("Claude 요약:") + 10;
+        int startIndex = response.indexOf(CLAUDE_SUMMARY) + CLAUDE_SUMMARY_OFFSET;
         int endIndex = response.indexOf("\n", startIndex);
         return response.substring(startIndex, endIndex).trim();
     }
@@ -198,11 +185,9 @@ public class ClaudeAPIService {
     // Claude 응답에서 추천 행동 3가지를 추출
     private List<String> extractSuggestedActions(String response) {
         List<String> actions = new ArrayList<>();
-        int startIndex = response.indexOf("추천 행동 :");
-        if (startIndex == -1) return actions;
-
-        startIndex += "추천 행동 :".length();
-        String actionsText = response.substring(startIndex).trim();
+        int START_INDEX = response.indexOf(SUGGESTED_ACTION) + SUGGESTED_ACTION_OFFSET;
+        if (START_INDEX == -1) return actions;
+        String actionsText = response.substring(START_INDEX).trim();
 
         // 각 줄을 개행(\n) 기준으로 분리
         String[] actionLines = actionsText.split("\\n");
@@ -218,13 +203,8 @@ public class ClaudeAPIService {
             }
             if (actions.size() == 3) break; // 최대 3개만 추가
         }
-
         return actions;
     }
-
-
-
-
 
     private String extractEmotion(String response) {
         if (response.contains("평온")) {

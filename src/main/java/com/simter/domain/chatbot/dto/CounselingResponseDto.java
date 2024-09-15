@@ -15,11 +15,10 @@ public class CounselingResponseDto {
     @AllArgsConstructor
     public static class CounselingDto {
         private Long counselingLogId;
-        private String chatbotType;
         private String title;
         private String summary;
         private String suggestion;
-        private List<Solution> solutions;
+        private List<String> solutions;
     }
 
     @Data

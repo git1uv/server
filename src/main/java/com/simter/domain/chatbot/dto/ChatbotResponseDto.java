@@ -19,8 +19,7 @@ public class ChatbotResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SelectChatbotResponseDto {
-
-        Long counselingId;
+        Long counselingLogId;
 
     }
 

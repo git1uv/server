@@ -68,13 +68,13 @@ public class ChatbotConverter {
                 .collect(Collectors.toList());
     }
 
-    public static CounselingResponseDto.CounselingDto toCounselingDto(CounselingLog counselingLog) {
+    public static CounselingResponseDto.CounselingDto toCounselingDto(CounselingLog counselingLog, List<String> solutions) {
         return CounselingDto.builder()
                 .counselingLogId(counselingLog.getId())
                 .title(counselingLog.getTitle())
                 .summary(counselingLog.getSummary())
                 .suggestion(counselingLog.getSuggestion())
-                //.solutions(toSolutionDtoList(solutions))
+                .solutions(solutions)
                 .build();
     }
 
