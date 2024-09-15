@@ -18,7 +18,7 @@ public class CounselingResponseDto {
         private String title;
         private String summary;
         private String suggestion;
-        private List<String> solutions;
+        private List<Solution> solutions;
     }
 
     @Data

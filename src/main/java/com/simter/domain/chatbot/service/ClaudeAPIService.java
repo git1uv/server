@@ -8,6 +8,7 @@ import com.simter.domain.chatbot.dto.ClaudeResponseDto;
 import com.simter.domain.chatbot.dto.CounselingResponseDto;
 import com.simter.domain.chatbot.entity.ChatbotMessage;
 import com.simter.domain.chatbot.entity.CounselingLog;
+import com.simter.domain.chatbot.entity.Solution;
 import com.simter.domain.chatbot.repository.ChatbotRepository;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
 import com.simter.domain.chatbot.repository.SolutionRepository;
@@ -130,9 +131,11 @@ public class ClaudeAPIService {
 
                     CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary);
                     counselingLogRepository.save(updatedLog);
-                    List<String> suggestedActions = extractSuggestedActions(assistantResponseText);
+                    List<String> suggestedActions = extractSuggestedActions(assistantResponseText, updatedLog);
                     log.info("suggestedActions : {}", suggestedActions);
-                    return Mono.just(ChatbotConverter.toCounselingDto(updatedLog, suggestedActions));
+
+                    List<Solution> savedSolutions = solutionRepository.findAllByCounselingLogId(updatedLog.getId());
+                    return Mono.just(ChatbotConverter.toCounselingDto(updatedLog,savedSolutions));
                 });
     }
 
@@ -183,7 +186,7 @@ public class ClaudeAPIService {
     }
 
     // Claude 응답에서 추천 행동 3가지를 추출
-    private List<String> extractSuggestedActions(String response) {
+    private List<String> extractSuggestedActions(String response, CounselingLog counselingLog) {
         List<String> actions = new ArrayList<>();
         int START_INDEX = response.indexOf(SUGGESTED_ACTION) + SUGGESTED_ACTION_OFFSET;
         if (START_INDEX == -1) return actions;
@@ -197,6 +200,10 @@ public class ClaudeAPIService {
             // 숫자로 시작하는 포맷 (예: "1. 가벼운 스트레칭" 같은 형식) 처리
             if (line.matches("\\d+\\.\\s.*")) {
                 String action = line.substring(line.indexOf(". ") + 2).trim(); // 숫자와 마침표, 공백 제거 후 추출
+                log.info("action : {}", action);
+                Solution solution = ChatbotConverter.createSolution(counselingLog, action);
+                solutionRepository.save(solution);
+
                 if (!action.isEmpty()) {
                     actions.add(action);  // 비어있지 않으면 리스트에 추가
                 }

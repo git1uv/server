@@ -64,17 +64,17 @@ public class ChatbotConverter {
 
     public static List<CounselingResponseDto.Solution> toSolutionDtoList(List<Solution> solutions) {
         return solutions.stream()
-                .map(ChatbotConverter::toSolutionDto)  // 변환 함수 호출
+                .map(ChatbotConverter::toSolutionDto)
                 .collect(Collectors.toList());
     }
 
-    public static CounselingResponseDto.CounselingDto toCounselingDto(CounselingLog counselingLog, List<String> solutions) {
+    public static CounselingResponseDto.CounselingDto toCounselingDto(CounselingLog counselingLog, List<Solution> solutions) {
         return CounselingDto.builder()
                 .counselingLogId(counselingLog.getId())
                 .title(counselingLog.getTitle())
                 .summary(counselingLog.getSummary())
                 .suggestion(counselingLog.getSuggestion())
-                .solutions(solutions)
+                .solutions(toSolutionDtoList(solutions))
                 .build();
     }
 
