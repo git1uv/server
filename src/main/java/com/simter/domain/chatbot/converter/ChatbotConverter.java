@@ -73,7 +73,7 @@ public class ChatbotConverter {
         return CounselingLog.builder()
                 .id(existingLog.getId()) // 기존 id 유지
                 .startedAt(existingLog.getStartedAt()) // 기존 startedAt 유지
-                .member(existingLog.getMember()) // 기존 사용자 정보 유지
+                .user(existingLog.getUser()) // 기존 사용자 정보 유지
                 .chatbotType(existingLog.getChatbotType()) // 기존 chatbot_type 유지
                 .title(title) // 새로운 title
                 .summary(userSummary) // 새로운 summary

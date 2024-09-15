@@ -17,4 +17,3 @@ public interface SolutionRepository extends JpaRepository<Solution, Long> {
     List<Solution> findByCounselingLog(@NotNull CounselingLog counselingLog);
 }
 
-
