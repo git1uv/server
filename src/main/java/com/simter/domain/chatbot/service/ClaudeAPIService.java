@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.util.HashMap;
@@ -32,13 +33,23 @@ import reactor.core.publisher.Mono;
 @Transactional(readOnly = true)
 public class ClaudeAPIService {
 
-    private final Dotenv dotenv;
-    private final WebClient webClient;
-    private final String API_KEY;
+    private Dotenv dotenv = Dotenv.load();
+    private WebClient webClient = WebClient.builder().build();
+    private String API_KEY = dotenv.get("CLAUDE_API_KEY");
     private final String CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
     private final ChatbotRepository chatbotRepository;
     private final CounselingLogRepository counselingLogRepository;
     private final SolutionRepository solutionRepository;
+
+    private static final String OVERALL_SUMMARY = "전체 요약:";
+    private static final String USER_SUMMARY = "사용자 요약:";
+    private static final String CLAUDE_SUMMARY = "Claude 요약:";
+    private static final String SUGGESTED_ACTION = "추천 행동:";
+
+    private static final int OVERALL_SUMMARY_OFFSET = OVERALL_SUMMARY.length();
+    private static final int USER_SUMMARY_OFFSET = USER_SUMMARY.length();
+    private static final int CLAUDE_SUMMARY_OFFSET = CLAUDE_SUMMARY.length();
+    private static final int SUGGESTED_ACTION_OFFSET = SUGGESTED_ACTION.length();
 
     // Claude API를 호출
     private Mono<String> callClaudeAPI(String systemPrompt, String conversationContext, int maxTokens) {
@@ -83,9 +94,11 @@ public class ClaudeAPIService {
         return callClaudeAPI(systemPrompt, conversationContext, 1024)
                 .map(response -> {
                     // 응답을 JSON 파싱
-                    JSONObject jsonResponse = new JSONObject(response);
-                    JSONArray contentArray = jsonResponse.getJSONArray("content");
-                    String assistantResponseText = contentArray.getJSONObject(0).getString("text");
+                    String assistantResponseText = new JSONObject(response)
+                            .getJSONArray("content")
+                            .getJSONObject(0)
+                            .getString("text");
+
                     String emotion = extractEmotion(assistantResponseText);
                     String messageWithoutEmotion = removeEmotionLine(assistantResponseText);
 
@@ -100,7 +113,8 @@ public class ClaudeAPIService {
                 });
     }
 
-    // 대화 요약을 위한 summarizeConversation 메서드
+    // 챗봇 대화 종료 서비스 (종료 요청 시 상담일지 내용 생성)
+    @Transactional
     public Mono<CounselingResponseDto.CounselingDto> summarizeConversation(Long counselingLogId) {
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
@@ -115,9 +129,10 @@ public class ClaudeAPIService {
         return callClaudeAPI(systemPrompt, conversationContext, 1024)
                 .flatMap(response -> {
                     // 응답을 JSON 파싱
-                    JSONObject jsonResponse = new JSONObject(response);
-                    JSONArray contentArray = jsonResponse.getJSONArray("content");
-                    String assistantResponseText = contentArray.getJSONObject(0).getString("text");
+                    String assistantResponseText = new JSONObject(response)
+                            .getJSONArray("content")
+                            .getJSONObject(0)
+                            .getString("text");
 
                     // Claude의 응답에서 title, summary, suggestion 추출
                     String title = extractTitle(assistantResponseText);
@@ -154,13 +169,9 @@ public class ClaudeAPIService {
     // 이전 사용자 메시지 가져오기
     private String getPreviousUserMessages(Long counselingLogId) {
         List<ChatbotMessage> previousMessages = chatbotRepository.findByCounselingLogId(counselingLogId);
-        StringBuilder messages = new StringBuilder();
-
-        for (ChatbotMessage message : previousMessages) {
-            messages.append(message.getSender()).append(": ").append(message.getContent()).append("\n");
-        }
-
-        return messages.toString();
+        return previousMessages.stream()
+                .map(message -> message.getSender() + ": " + message.getContent())
+                .collect(Collectors.joining("\n"));
     }
 
     // Claude 응답에서 title 추출
@@ -213,27 +224,11 @@ public class ClaudeAPIService {
     }
 
     private String extractEmotion(String response) {
-        if (response.contains("평온")) {
-            return "평온";
-        } else if (response.contains("슬픔")) {
-            return "슬픔";
-        } else if (response.contains("웃음")) {
-            return "웃음";
-        } else if (response.contains("사랑")) {
-            return "사랑";
-        } else if (response.contains("놀람")) {
-            return "놀람";
-        } else if (response.contains("피곤")) {
-            return "피곤";
-        } else if (response.contains("불편")) {
-            return "불편";
-        } else if (response.contains("화남")) {
-            return "화남";
-        } else if (response.contains("불안")) {
-            return "불안";
-        } else {
-            return "평온";
-        }
+        List<String> emotions = Arrays.asList("평온", "슬픔", "웃음", "사람", "놀람", "피곤", "화남", "불안");
+        return emotions.stream()
+                .filter(emotion -> response.contains(emotion))
+                .findFirst()
+                .orElse("평온");
     }
 
     // 감정 라인을 제거한 본문 추출
