@@ -110,7 +110,7 @@ public class ClaudeAPIService {
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
         String conversationContext = previousMessages
-                + "이 대화를 각각 300자 이내로 요약해줘. 사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. 답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~ ";
+                + "이 대화를 각각 300자 이내로 요약해줘. 제목은 30자 이내야.사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. 답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~ ";
 
         // 프롬프트 작성
         String systemPrompt = "너의 임무는 아래 대화를 요약해서 사용자에게 보여주는 것이다. " +

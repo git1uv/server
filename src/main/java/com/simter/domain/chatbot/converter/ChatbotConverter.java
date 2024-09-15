@@ -71,7 +71,6 @@ public class ChatbotConverter {
     public static CounselingResponseDto.CounselingDto toCounselingDto(CounselingLog counselingLog) {
         return CounselingDto.builder()
                 .counselingLogId(counselingLog.getId())
-                .chatbotType(counselingLog.getChatbotType())
                 .title(counselingLog.getTitle())
                 .summary(counselingLog.getSummary())
                 .suggestion(counselingLog.getSuggestion())
