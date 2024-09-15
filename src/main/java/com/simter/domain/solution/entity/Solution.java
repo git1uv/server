@@ -16,7 +16,7 @@ import org.hibernate.annotations.ColumnDefault;
 public class Solution {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="solution_id")
+    @Column(name = "solution_id")
     private Long id;
 
     @ManyToOne
@@ -30,6 +30,8 @@ public class Solution {
     @ColumnDefault("false")
     private Boolean isCompleted;
 
-
+    public void setIsCompleted(boolean isCompleted) {
+        this.isCompleted = isCompleted;
+    }
 
 }

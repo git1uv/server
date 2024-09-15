@@ -10,8 +10,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CalendarsRepository extends JpaRepository<Calendars, Long> {
 
+    boolean existsById(@NotNull Long id);
     Optional<Calendars> findById(@NotNull Long id);
 
     List<Calendars> findByUserIdAndDateBetween(@NotNull Member member, @NotNull LocalDate startDate, @NotNull LocalDate endDate);
 
+    Optional<Calendars> findByUserIdAndDate(@NotNull Member member, @NotNull LocalDate date);
 }

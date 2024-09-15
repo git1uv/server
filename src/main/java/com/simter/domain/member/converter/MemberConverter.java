@@ -13,7 +13,7 @@ public class MemberConverter {
                 .email(registerDto.getEmail())
                 .password(registerDto.getPassword())
                 .nickname(registerDto.getNickname())
-                .loginType("general")
+                .loginType(registerDto.getLoginType())
                 .build();
     }
 }
