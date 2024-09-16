@@ -12,9 +12,15 @@ import com.simter.domain.chatbot.entity.Solution;
 import com.simter.domain.chatbot.repository.ChatbotRepository;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
 import com.simter.domain.chatbot.repository.SolutionRepository;
+import com.simter.domain.mail.converter.MailConverter;
+import com.simter.domain.mail.entity.Mail;
+import com.simter.domain.mail.repository.MailRepository;
+import com.simter.domain.member.entity.Member;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +39,8 @@ import reactor.core.publisher.Mono;
 @Transactional(readOnly = true)
 public class ClaudeAPIService {
 
+    private final MailConverter mailConverter;
+    private final MailRepository mailRepository;
     private Dotenv dotenv = Dotenv.load();
     private WebClient webClient = WebClient.builder().build();
     private String API_KEY = dotenv.get("CLAUDE_API_KEY");
@@ -45,11 +53,13 @@ public class ClaudeAPIService {
     private static final String USER_SUMMARY = "사용자 요약:";
     private static final String CLAUDE_SUMMARY = "Claude 요약:";
     private static final String SUGGESTED_ACTION = "추천 행동:";
+    private static final String LETTER = "편지:";
 
     private static final int OVERALL_SUMMARY_OFFSET = OVERALL_SUMMARY.length();
     private static final int USER_SUMMARY_OFFSET = USER_SUMMARY.length();
     private static final int CLAUDE_SUMMARY_OFFSET = CLAUDE_SUMMARY.length();
     private static final int SUGGESTED_ACTION_OFFSET = SUGGESTED_ACTION.length();
+    private static final int LETTER_OFFSET = LETTER.length();
 
     // Claude API를 호출
     private Mono<String> callClaudeAPI(String systemPrompt, String conversationContext, int maxTokens) {
@@ -119,11 +129,13 @@ public class ClaudeAPIService {
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
         String conversationContext = previousMessages
-                + "사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. 답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~ 전체 요야는 20자, 나머지는 300자 이내로 해줘.";
+                + "사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. "
+                + "그리고 최대 176로 이 서비스에 다시 올 사용자를 위해 고민하던 것들은 사라졌는지, 해결되었는지, 또는 계속 고민 중인지 걱정하면서 더 이야기할 것들은 없는지 확인하는 편지를 써줘"
+                + "답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~, 전체 요약는 20자, 사용자 요약, Claude 요약은 300자 이내로, 추천 행동은 각각 50자 이내로, 편지는 176자 이내로 해줘";
 
         // 프롬프트 작성
         String systemPrompt = "너의 임무는 아래 대화를 요약해서 사용자에게 보여주는 것이다. " +
-                "사용자가 말한 내용과 챗봇이 답변한 내용을 각각 300자 이내로 요약하고, 사용자가 하면 좋을 것 같은 행동 3가지를 만들어줘.";
+                "사용자가 말한 내용과 챗봇이 답변한 내용을 각각 300자 이내로 요약하고, 사용자가 하면 좋을 것 같은 행동 3가지,편지를 만들어줘.";
 
         // Claude API 호출 및 상담 로그 업데이트
         return callClaudeAPI(systemPrompt, conversationContext, 1024)
@@ -138,6 +150,7 @@ public class ClaudeAPIService {
                     String title = extractTitle(assistantResponseText);
                     String userSummary = extractUserSummary(assistantResponseText); // 사용자 요약 추출
                     String assistantSummary = extractAssistantSummary(assistantResponseText); // 챗봇 요약 추출
+                    extractLetter(assistantResponseText, counselingLogRepository.findById(counselingLogId).get().getUser(), counselingLogRepository.findById(counselingLogId).get().getChatbotType());
                     log.info("assistantResponseText : {} ", assistantResponseText);
 
                     CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)
@@ -221,6 +234,26 @@ public class ClaudeAPIService {
             if (actions.size() == 3) break; // 최대 3개만 추가
         }
         return actions;
+    }
+
+    // Claude 응답에서 편지 내용 추출해서 DB에 저장
+    private String extractLetter(String response, Member member, String chatbotType) {
+        int startIndex = response.indexOf(LETTER) + LETTER_OFFSET;
+        int endIndex = response.length();
+        String mailContent = response.substring(startIndex, endIndex).trim();
+        log.info("mailContent : {}", mailContent);
+        Mail mail = MailConverter.toMailEntity(member, mailContent, chatbotType);
+        LocalDateTime randomTime = generateRandomTime();
+        mail.setCreatedAt(randomTime);
+        mailRepository.save(mail);
+        return null;
+    }
+
+    private LocalDateTime generateRandomTime() {
+        long minSeconds = 5 * 60 * 60;  //5시간
+        long maxSeconds = 24 * 60 * 60; //24시간
+        long randomSeconds = ThreadLocalRandom.current().nextLong(minSeconds, maxSeconds);
+        return LocalDateTime.now().plusSeconds(randomSeconds);
     }
 
     private String extractEmotion(String response) {

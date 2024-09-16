@@ -30,6 +30,7 @@ public class Mail {
     @Column(nullable = false, length = 100)
     private String chatbotType;
 
+    @Setter
     private LocalDateTime createdAt;
 
     private LocalDateTime deletedAt;

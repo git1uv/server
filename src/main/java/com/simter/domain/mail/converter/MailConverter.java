@@ -2,6 +2,8 @@ package com.simter.domain.mail.converter;
 
 import com.simter.domain.mail.dto.MailGetResponseDto;
 import com.simter.domain.mail.entity.Mail;
+import com.simter.domain.member.entity.Member;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,4 +31,17 @@ public class MailConverter {
                 .createdAt(mail.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString())
                 .build();
     }
+
+    public static Mail toMailEntity(Member member, String content, String chatbotType) {
+        return Mail.builder()
+                .member(member)
+                .content(content)
+                .chatbotType(chatbotType)
+                .createdAt(LocalDateTime.now())
+                .isRead(false)
+                .isDeleted(false)
+                .isStarred(false)
+                .build();
+    }
+
 }
