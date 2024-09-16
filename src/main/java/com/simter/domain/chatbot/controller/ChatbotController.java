@@ -1,5 +1,7 @@
 package com.simter.domain.chatbot.controller;
 
+import static com.simter.apiPayload.code.status.SuccessStatus.COUNSELING_LIST;
+
 import com.simter.apiPayload.ApiResponse;
 import com.simter.apiPayload.code.status.SuccessStatus;
 import com.simter.config.JwtTokenProvider;
@@ -78,6 +80,14 @@ public class ChatbotController {
             @RequestParam Long counselingLogId) {
         return claudeAPIService.summarizeConversation(counselingLogId)
                 .map(response -> ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_SESSION_END, response));
+    }
+
+    @Operation(summary = "상담 일지 조회", description = "상담 일지 조회 API")
+    @GetMapping("/counselinglog/{counselinglogId}")
+    public ApiResponse<CounselingResponseDto.CounselingDto> getCounselingLog(
+            @PathVariable Long counselinglogId) {
+        CounselingResponseDto.CounselingDto response = chatbotService.getCounselingLog(counselinglogId);
+        return ApiResponse.onSuccessCustom(SuccessStatus.COUNSELING_LIST, response);
     }
 
 

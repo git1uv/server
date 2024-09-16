@@ -8,10 +8,13 @@ import com.simter.domain.chatbot.dto.ChatbotResponseDto.GetChatbotTypeResponseDt
 import com.simter.domain.chatbot.dto.ChatbotResponseDto.SelectChatbotResponseDto;
 import com.simter.domain.chatbot.dto.CounselingResponseDto;
 import com.simter.domain.chatbot.entity.CounselingLog;
+import com.simter.domain.chatbot.entity.Solution;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
+import com.simter.domain.chatbot.repository.SolutionRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +26,7 @@ public class ChatbotService {
 
    private final MemberRepository memberRepository;
    private final CounselingLogRepository counselingLogRepository;
-
+   private final SolutionRepository solutionRepository;
     //사용자의 default 챗봇 변경
     @Transactional
     public void updateDefaultChatbot(Long memberId, String ChatbotType) {
@@ -58,10 +61,11 @@ public class ChatbotService {
     }
 
     //상담일지 가져오기
-    public String getCounselingLog(Long counselingLogId) {
-        CounselingLog log = counselingLogRepository.findById(counselingLogId)
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
-        return log.getSummary();
+    public CounselingResponseDto.CounselingDto getCounselingLog(Long counselingLogId) {
+        CounselingLog counselingLog = counselingLogRepository.findById(counselingLogId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.COUNSELING_LOG_NOT_FOUND));
+        List<Solution> solution = solutionRepository.findAllByCounselingLogId(counselingLog.getId());
+        return ChatbotConverter.toCounselingDto(counselingLog,solution);
     }
 
 

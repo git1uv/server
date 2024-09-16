@@ -65,6 +65,7 @@ public class ChatbotConverter {
                 .title(counselingLog.getTitle())
                 .summary(counselingLog.getSummary())
                 .suggestion(counselingLog.getSuggestion())
+                .endedAt(formatDateTime(counselingLog.getEndedAt()))
                 .solutions(toSolutionDtoList(solutions))
                 .build();
     }
@@ -89,6 +90,8 @@ public class ChatbotConverter {
                 .counselingLog(counselingLog)
                 .build();
     }
+
+
 
 
 
