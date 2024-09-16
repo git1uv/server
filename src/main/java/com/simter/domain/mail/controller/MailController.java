@@ -1,6 +1,7 @@
 package com.simter.domain.mail.controller;
 
 import com.simter.apiPayload.ApiResponse;
+import com.simter.apiPayload.code.status.SuccessStatus;
 import com.simter.domain.mail.dto.MailDeleteRequestDto;
 import com.simter.domain.mail.dto.MailGetResponseDto;
 import com.simter.domain.mail.service.MailService;
@@ -29,7 +30,7 @@ public class MailController {
     @GetMapping("/list/{memberId}")
     public ApiResponse<MailGetResponseDto> getAllMails(@PathVariable Long memberId) {
         MailGetResponseDto response = mailService.getAllMails(memberId);
-        return ApiResponse.onSuccess(response);
+        return ApiResponse.onSuccessCustom(SuccessStatus.MAIL_LIST,response);
     }
 
     // 편지 즐겨찾기 조회 API (GET)
@@ -37,7 +38,7 @@ public class MailController {
     @GetMapping("/starred/{memberId}")
     public ApiResponse<MailGetResponseDto> getStarredMails(@PathVariable Long memberId) {
         MailGetResponseDto response = mailService.getStarredMails(memberId);
-        return ApiResponse.onSuccess(response);
+        return ApiResponse.onSuccessCustom(SuccessStatus.MAIL_LIST,response);
     }
 
     // 편지 즐겨찾기 변경 API (PATCH)
@@ -45,7 +46,7 @@ public class MailController {
     @PatchMapping("/star/{mailId}")
     public ApiResponse<Void> changeStarred(@PathVariable Long mailId) {
         mailService.changeStarred(mailId);
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onSuccessCustom(SuccessStatus.MAIL_STARRED,null);
     }
 
     // 편지 삭제 API (PATCH)
@@ -53,18 +54,15 @@ public class MailController {
     @PostMapping("/delete")
     public ApiResponse<Void> deleteMail(@RequestBody MailDeleteRequestDto mailDeleteRequestDto) {
         mailService.deleteMails(mailDeleteRequestDto.getMailIds());
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onSuccessCustom(SuccessStatus.MAIL_DELETE,null);
     }
 
     @Operation(summary = "편지 개별 조회", description = "하나의 편지 내용을 조회하는 API")
-    @GetMapping("/")
+    @GetMapping("")
     public ApiResponse<MailGetResponseDto.MailDto> getMail(
             @RequestParam Long mailId
     ) {
         MailGetResponseDto.MailDto response = mailService.getMail(mailId);
-        return ApiResponse.onSuccess(response);
+        return ApiResponse.onSuccessCustom(SuccessStatus.MAIL_GET, response);
     }
-
-
-
 }

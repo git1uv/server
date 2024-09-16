@@ -49,7 +49,7 @@ public class MailService {
     public void changeStarred(Long mailId) {
         Mail mail = mailRepository.findById(mailId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
-        mail.setIsStarred(!mail.getIsStarred());
+        mail.setIsStarred(true);
         mailRepository.save(mail);
     }
 
@@ -68,6 +68,7 @@ public class MailService {
     public MailGetResponseDto.MailDto getMail(Long mailId) {
         Mail mail = mailRepository.findById(mailId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
+        mail.setIsRead(true);
         return mailConverter.convertToMailDto(mail);
     }
 

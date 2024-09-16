@@ -35,6 +35,7 @@ public class Mail {
     private LocalDateTime deletedAt;
 
     @Column(nullable = false)
+    @Setter
     private Boolean isRead = false;
 
     @Column(nullable = false)
@@ -42,11 +43,9 @@ public class Mail {
 
     @Column(nullable = false)
     @ColumnDefault("false")
+    @Setter
     private Boolean isStarred = false;
 
-    public void setIsStarred(Boolean isStared) {
-        this.isStarred = isStarred;
-    }
 
     public void markAsDeleted() {
         this.isDeleted = true;
