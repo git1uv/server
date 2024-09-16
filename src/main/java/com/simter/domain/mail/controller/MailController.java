@@ -36,7 +36,7 @@ public class MailController {
             HttpServletRequest request
     ) {
         String email = jwtTokenProvider.getEmail(jwtTokenProvider.resolveToken(request).getAccessToken());
-        MailGetResponseDto response = mailService.getAllMails(email,listType);
+        MailGetResponseDto response = mailService.getAllMails(email, listType);
         return ApiResponse.onSuccessCustom(SuccessStatus.MAIL_LIST, response);
     }
 
