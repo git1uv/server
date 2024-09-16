@@ -5,8 +5,6 @@ import static org.springframework.security.core.context.SecurityContextHolder.se
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.config.JwtTokenProvider;
-import com.simter.domain.mail.entity.Mail;
-import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.converter.MemberConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.dto.MainDto;
@@ -36,13 +34,13 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class MemberService extends DefaultOAuth2UserService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender mailSender;
-    private final MailRepository mailRepository;
 
     //회원가입
     public void register(RegisterDto registerRequestDto) {
@@ -114,18 +112,17 @@ public class MemberService extends DefaultOAuth2UserService {
     }
 
     //메인화면 api
+
     public MainDto main(String email) {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        Long mail = mailRepository.countByMemberAndIsDeletedFalseAndIsReadFalseAndCreatedAtBefore(member, LocalDateTime.now());
-        if (mail == null) {
-            throw new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND);
-        }
-        return MainDto.builder()
-            .mailAlert(mail)
+        MainDto mainDto = MainDto.builder()
+            .mailAlert(member.isMailAlert())
             .nickname(member.getNickname())
             .airplane(member.isHasAirplane())
             .build();
+        member.setMailAlert(false);
+        return mainDto;
     }
 
     //닉네임 변경

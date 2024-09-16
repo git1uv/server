@@ -16,6 +16,7 @@ import com.simter.domain.mail.converter.MailConverter;
 import com.simter.domain.mail.entity.Mail;
 import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.entity.Member;
+import com.simter.domain.member.repository.MemberRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,11 +37,12 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional(readOnly = true)
+@Transactional
 public class ClaudeAPIService {
 
     private final MailConverter mailConverter;
     private final MailRepository mailRepository;
+    private final MemberRepository memberRepository;
     private Dotenv dotenv = Dotenv.load();
     private WebClient webClient = WebClient.builder().build();
     private String API_KEY = dotenv.get("CLAUDE_API_KEY");
@@ -126,6 +128,9 @@ public class ClaudeAPIService {
     // 챗봇 대화 종료 서비스 (종료 요청 시 상담일지 내용 생성)
     @Transactional
     public Mono<CounselingResponseDto.CounselingDto> summarizeConversation(Long counselingLogId) {
+        Member member = counselingLogRepository.findById(counselingLogId).get().getUser();
+        member.setMailAlert(true);
+        memberRepository.save(member);
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
         String conversationContext = previousMessages
@@ -237,7 +242,7 @@ public class ClaudeAPIService {
     }
 
     // Claude 응답에서 편지 내용 추출해서 DB에 저장
-    private String extractLetter(String response, Member member, String chatbotType) {
+    public String extractLetter(String response, Member member, String chatbotType) {
         int startIndex = response.indexOf(LETTER) + LETTER_OFFSET;
         int endIndex = response.length();
         String mailContent = response.substring(startIndex, endIndex).trim();
@@ -245,7 +250,6 @@ public class ClaudeAPIService {
         Mail mail = MailConverter.toMailEntity(member, mailContent, chatbotType);
         LocalDateTime randomTime = generateRandomTime();
         mail.setCreatedAt(randomTime);
-        mailRepository.save(mail);
         return null;
     }
 

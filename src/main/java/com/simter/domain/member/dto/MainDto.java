@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class MainDto {
     private String nickname;
     private boolean airplane;
-    private long mailAlert;
+    private boolean mailAlert;
 }
