@@ -1,7 +1,5 @@
 package com.simter.domain.chatbot.controller;
 
-import static com.simter.apiPayload.code.status.SuccessStatus.COUNSELING_LIST;
-
 import com.simter.apiPayload.ApiResponse;
 import com.simter.apiPayload.code.status.SuccessStatus;
 import com.simter.config.JwtTokenProvider;
@@ -42,34 +40,42 @@ public class ChatbotController {
 
     //Default 챗봇 변경 API(PATCH)
     @Operation(summary = "Default 챗봇 변경", description = "챗봇 유형을 변경하는 API")
-    @PatchMapping("/update/{userId}")
-    public ApiResponse<Void> updateDefaultChatbot(@PathVariable Long userId, @RequestBody DefaultChatbotRequestDto defaultChatbotRequestDto) {
-        chatbotService.updateDefaultChatbot(userId, defaultChatbotRequestDto.getChatbot());
-        return ApiResponse.onSuccess(null);
+    @PatchMapping("/update")
+    public ApiResponse<Void> updateDefaultChatbot(
+            @RequestBody DefaultChatbotRequestDto defaultChatbotRequestDto,
+            HttpServletRequest request) {
+        String email = jwtTokenProvider.getEmail(jwtTokenProvider.resolveToken(request).getAccessToken());
+        chatbotService.updateDefaultChatbot(email, defaultChatbotRequestDto.getChatbot());
+        return ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_TYPE_CHANGE,null);
     }
 
     //Default 챗봇 조회 API(GET)
     @Operation(summary = "Default 챗봇 조회", description = "사용자의 default 챗봇을 조회하는 API")
-    @GetMapping("/{userId}")
-    public ApiResponse<GetChatbotTypeResponseDto> getDefaultChatbot(@PathVariable Long userId) {
-        GetChatbotTypeResponseDto response = chatbotService.getDefaultChatbot(userId);
-        return ApiResponse.onSuccess(response);
+    @GetMapping("")
+    public ApiResponse<GetChatbotTypeResponseDto> getDefaultChatbot(
+            HttpServletRequest request) {
+        String email = jwtTokenProvider.getEmail(jwtTokenProvider.resolveToken(request).getAccessToken());
+        GetChatbotTypeResponseDto response = chatbotService.getDefaultChatbot(email);
+        return ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_TYPE_GET, response);
     }
 
     //특정 세션의 챗봇 type 설정(PATCH)
     @Operation(summary = "특정 세션의 챗봇 설정 변경", description = "사용자의 세션에 해당하는 챗봇 타입을 설정하고 새로운 상담 일지를 생성하는 API")
     @PostMapping("/session")
-    public ApiResponse<SelectChatbotResponseDto> createChatbotSession(HttpServletRequest request, @RequestBody SelectChatbotRequestDto selectChatbotRequestDto) {
-
+    public ApiResponse<SelectChatbotResponseDto> createChatbotSession(
+            @RequestBody SelectChatbotRequestDto selectChatbotRequestDto,
+            HttpServletRequest request) {
         JwtTokenDto token = jwtTokenProvider.resolveToken(request);
         String email = jwtTokenProvider.getEmail(token.getAccessToken());
         SelectChatbotResponseDto response = chatbotService.selectChatbot(email, selectChatbotRequestDto.getChatbotType());
-        return ApiResponse.onSuccess(response);
+        return ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_TYPE_CHANGE, response);
     }
 
     @Operation(summary = "챗봇과의 대화 API", description = "챗봇 채팅 API")
     @PostMapping("/chatting")
-    public Mono<ApiResponse<ClaudeResponseDto>> chatting(@RequestBody ClaudeRequestDto requestDto, @RequestParam Long counselingLogId) {
+    public Mono<ApiResponse<ClaudeResponseDto>> chatting(
+            @RequestBody ClaudeRequestDto requestDto,
+            @RequestParam Long counselingLogId) {
         return claudeAPIService.chatWithClaude(requestDto, counselingLogId)
                 .map(response -> ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_CHATTING, response));
     }

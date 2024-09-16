@@ -135,8 +135,10 @@ public class ClaudeAPIService {
         String previousMessages = getPreviousUserMessages(counselingLogId);
         String conversationContext = previousMessages
                 + "사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. "
+                + "사용자 요약은 사용자가 한 말을 종합해서 최대한 정성스럽게 요약해줘. 친구가 너한테 고민상담을 한 것처럼 말해줘. 사용자라는 단어는 언급하지마"
+                + "Claude 요약은 Claude가 한 말을 종합해서 최대한 정성스럽게 요약해줘. 친구가 너한테 고민상담을 했고, 너가 한 말을 종합해서 조언을 하는 방향으로 . Claude라는 단어는 언급하지마"
                 + "그리고 최대 176로 이 서비스에 다시 올 사용자를 위해 고민하던 것들은 사라졌는지, 해결되었는지, 또는 계속 고민 중인지 걱정하면서 더 이야기할 것들은 없는지 확인하는 편지를 써줘"
-                + "답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~, 전체 요약는 20자, 사용자 요약, Claude 요약은 300자 이내로, 추천 행동은 각각 50자 이내로, 편지는 176자 이내로 해줘";
+                + "답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~, 전체 요약는 20자, 사용자 요약, Claude 요약은 각각 250자에서 300자로, 추천 행동은 각각 50자 이내로, 편지는 176자 이내로 해줘";
 
         // 프롬프트 작성
         String systemPrompt = "너의 임무는 아래 대화를 요약해서 사용자에게 보여주는 것이다. " +
@@ -250,6 +252,7 @@ public class ClaudeAPIService {
         Mail mail = MailConverter.toMailEntity(member, mailContent, chatbotType);
         LocalDateTime randomTime = generateRandomTime();
         mail.setCreatedAt(randomTime);
+        mailRepository.save(mail);
         return null;
     }
 
