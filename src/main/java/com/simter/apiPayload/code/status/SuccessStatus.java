@@ -12,6 +12,14 @@ public enum SuccessStatus implements BaseCode {
 
     _OK("200","성공입니다"),
 
+    //편지
+    MAIL_LIST("200","편지 목록 조회에 성공하였습니다."),
+    MAIL_GET("200","편지 조회에 성공하였습니다."),
+    MAIL_CREATE("200","편지 생성에 성공하였습니다."),
+    MAIL_UPDATE("200","편지 수정에 성공하였습니다."),
+    MAIL_DELETE("200","편지 삭제에 성공하였습니다."),
+    MAIL_STARRED("200","편지 즐겨찾기에 성공하였습니다."),
+
 
     //챗봇
     CHATBOT_SESSION_START("200","챗봇 종류 선택에 성공하였습니다."),
@@ -19,6 +27,8 @@ public enum SuccessStatus implements BaseCode {
     CHATBOT_SESSION_END("200","챗봇 세션 종료에 성공하였습니다."),
     CHATBOT_CHATTING("200","챗봇 응답 생성에 성공하였습니다."),
     COUNSELING_LIST("200","상담일지 조회에 성공하였습니다.");
+
+
 
 
     private final String code;

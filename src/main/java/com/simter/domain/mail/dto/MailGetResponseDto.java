@@ -16,6 +16,7 @@ public class MailGetResponseDto {
     public static class MailDto {
         private Long mailId;
         private boolean isRead;
+        private boolean isStarred;
         private String content;
         private String chatbotType;
         private String createdAt;

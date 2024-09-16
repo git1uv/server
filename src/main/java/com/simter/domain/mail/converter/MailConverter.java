@@ -19,10 +19,11 @@ public class MailConverter {
                 .build();
     }
 
-    private MailGetResponseDto.MailDto convertToMailDto(Mail mail) {
+    public MailGetResponseDto.MailDto convertToMailDto(Mail mail) {
         return MailGetResponseDto.MailDto.builder()
                 .mailId(mail.getId())
                 .isRead(mail.getIsRead())
+                .isStarred(mail.getIsStarred())
                 .content(mail.getContent())
                 .chatbotType(mail.getChatbotType())
                 .createdAt(mail.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString())
