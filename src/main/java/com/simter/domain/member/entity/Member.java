@@ -46,6 +46,7 @@ public class Member implements UserDetails {
     private String loginType;
 
     @Column(nullable = false)
+    @Setter
     private boolean mailAlert = false;
 
     @Column(nullable = false)

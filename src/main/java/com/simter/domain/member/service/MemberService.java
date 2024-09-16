@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class MemberService extends DefaultOAuth2UserService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder encoder;
@@ -111,14 +112,17 @@ public class MemberService extends DefaultOAuth2UserService {
     }
 
     //메인화면 api
+
     public MainDto main(String email) {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        return MainDto.builder()
+        MainDto mainDto = MainDto.builder()
             .mailAlert(member.isMailAlert())
             .nickname(member.getNickname())
             .airplane(member.isHasAirplane())
             .build();
+        member.setMailAlert(false);
+        return mainDto;
     }
 
     //닉네임 변경
