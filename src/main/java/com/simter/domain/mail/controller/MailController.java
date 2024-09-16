@@ -60,7 +60,7 @@ public class MailController {
     @Operation(summary = "편지 개별 조회", description = "하나의 편지 내용을 조회하는 API")
     @GetMapping("")
     public ApiResponse<MailGetResponseDto.MailDto> getMail(
-            @RequestParam Long mailId
+            @RequestParam (name = "mailId", required = true) Long mailId
     ) {
         MailGetResponseDto.MailDto response = mailService.getMail(mailId);
         return ApiResponse.onSuccessCustom(SuccessStatus.MAIL_GET, response);

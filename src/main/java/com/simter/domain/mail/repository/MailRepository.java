@@ -19,8 +19,6 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
     List<Mail> findByMemberAndIsStarredTrueAndCreatedAtBefore(Member member, LocalDateTime currentDateTime);
 
 
-    Optional<Mail> findById(Long id);
-
     Optional<Mail> findByIdAndIsDeletedFalseAndCreatedAtBefore(Long id, LocalDateTime currentDateTime);
 
     // 삭제되지 않고 즐겨찾기된 메일 조회
