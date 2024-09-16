@@ -42,6 +42,7 @@ public enum ErrorStatus implements BaseCode {
 
     //메일 관련 에러
     MAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, "MAIL4001", "편지가 없습니다."),
+    INVALID_LIST_TYPE(HttpStatus.BAD_REQUEST, "MAIL4002", "올바른 편지 목록 타입이 아닙니다."),
 
     //챗봇 관련 에러
     CHATBOT_SESSION_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHATBOT4001", "해당 챗봇 세션이 없습니다"),

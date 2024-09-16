@@ -19,4 +19,12 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
 
     Optional<Mail> findById(Long id);
 
+    Optional<Mail> findByIdAndIsDeletedFalse(Long id);
+
+    // 삭제되지 않고 즐겨찾기된 메일 조회
+    List<Mail> findByMemberAndIsDeletedFalseAndIsStarredTrue(Member member);
+
+    // 삭제되지 않고 읽지 않은 메일 조회
+    List<Mail> findByMemberAndIsDeletedFalseAndIsReadFalse(Member member);
+
 }

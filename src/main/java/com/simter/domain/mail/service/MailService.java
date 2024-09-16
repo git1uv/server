@@ -24,14 +24,23 @@ public class MailService {
     private final MailConverter mailConverter;
 
     //특정 사용자의 전체 메일(삭제되지 않은 메일) 조회
-    public MailGetResponseDto getAllMails(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+    public MailGetResponseDto getAllMails(String email, String listType) {
+        Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        List<Mail> mails;
 
+        if (listType == null || listType.equals("all")) {
+            mails = mailRepository.findByMemberAndIsDeletedFalse(member);
+        } else if (listType.equals("starred")) {
+            mails = mailRepository.findByMemberAndIsDeletedFalseAndIsStarredTrue(member);
+        } else if (listType.equals("notRead")) {
+            mails = mailRepository.findByMemberAndIsDeletedFalseAndIsReadFalse(member);
+        } else {
+            throw new ErrorHandler(ErrorStatus.INVALID_LIST_TYPE);
+        }
 
-        List<Mail> mails = mailRepository.findByMemberAndIsDeletedFalse(member);
         if (mails.isEmpty()) {
-            throw new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND); // 새로운 에러 상태를 정의할 수도 있습니다.
+            throw new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND);
         }
         return mailConverter.convertToMailGetResponseDto(mails);
     }
@@ -47,7 +56,7 @@ public class MailService {
 
     //특정 메일의 즐겨찾기 여부 변경
     public void changeStarred(Long mailId) {
-        Mail mail = mailRepository.findById(mailId)
+        Mail mail = mailRepository.findByIdAndIsDeletedFalse(mailId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
         mail.setIsStarred(true);
         mailRepository.save(mail);
@@ -57,7 +66,7 @@ public class MailService {
     @Transactional
     public void deleteMails(List<Long> mailIds) {
         for (Long mailId : mailIds) {
-            Mail mail = mailRepository.findById(mailId)
+            Mail mail = mailRepository.findByIdAndIsDeletedFalse(mailId)
                     .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
             mail.markAsDeleted();
             mailRepository.save(mail);
@@ -66,7 +75,7 @@ public class MailService {
 
     //특정 메일 조회
     public MailGetResponseDto.MailDto getMail(Long mailId) {
-        Mail mail = mailRepository.findById(mailId)
+        Mail mail = mailRepository.findByIdAndIsDeletedFalse(mailId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
         mail.setIsRead(true);
         return mailConverter.convertToMailDto(mail);
