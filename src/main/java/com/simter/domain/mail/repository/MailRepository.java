@@ -21,12 +21,14 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
 
     Optional<Mail> findById(Long id);
 
-    Optional<Mail> findByIdAndIsDeletedFalse(Long id);
+    Optional<Mail> findByIdAndIsDeletedFalseAndCreatedAtBefore(Long id, LocalDateTime currentDateTime);
 
     // 삭제되지 않고 즐겨찾기된 메일 조회
     List<Mail> findByMemberAndIsDeletedFalseAndIsStarredTrueAndCreatedAtBefore(Member member, LocalDateTime currentDateTime);
 
     // 삭제되지 않고 읽지 않은 메일 조회
     List<Mail> findByMemberAndIsDeletedFalseAndIsReadFalseAndCreatedAtBefore(Member member, LocalDateTime currentDateTime);
+
+    long countByMemberAndIsDeletedFalseAndIsReadFalseAndCreatedAtBefore(Member member, LocalDateTime currentDateTime);
 
 }

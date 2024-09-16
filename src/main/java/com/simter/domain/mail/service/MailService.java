@@ -56,7 +56,7 @@ public class MailService {
 
     //특정 메일의 즐겨찾기 여부 변경
     public void changeStarred(Long mailId) {
-        Mail mail = mailRepository.findByIdAndIsDeletedFalse(mailId)
+        Mail mail = mailRepository.findByIdAndIsDeletedFalseAndCreatedAtBefore(mailId, LocalDateTime.now())
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
         mail.setIsStarred(true);
         mailRepository.save(mail);
@@ -66,7 +66,7 @@ public class MailService {
     @Transactional
     public void deleteMails(List<Long> mailIds) {
         for (Long mailId : mailIds) {
-            Mail mail = mailRepository.findByIdAndIsDeletedFalse(mailId)
+            Mail mail = mailRepository.findByIdAndIsDeletedFalseAndCreatedAtBefore(mailId, LocalDateTime.now())
                     .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
             mail.markAsDeleted();
             mailRepository.save(mail);
@@ -76,7 +76,7 @@ public class MailService {
     //특정 메일 조회
     @Transactional
     public MailGetResponseDto.MailDto getMail(Long mailId) {
-        Mail mail = mailRepository.findByIdAndIsDeletedFalse(mailId)
+        Mail mail = mailRepository.findByIdAndIsDeletedFalseAndCreatedAtBefore(mailId, LocalDateTime.now())
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
         mail.setIsRead(true);
         return mailConverter.convertToMailDto(mail);

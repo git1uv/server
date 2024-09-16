@@ -1,7 +1,11 @@
 package com.simter.domain.member.service;
 
+import com.simter.apiPayload.code.status.ErrorStatus;
+import com.simter.apiPayload.exception.handler.ErrorHandler;
+import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,6 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
        Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException(email));
+
         return Member.builder()
             .id(member.getId())
             .password(member.getPassword())
@@ -26,7 +31,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             .chatbot(member.getChatbot())
             .email(member.getEmail())
             .loginType(member.getLoginType())
-            .mailAlert(member.isMailAlert())
             .status(member.isStatus())
             .inactiveDate(member.getInactiveDate())
             .build();
