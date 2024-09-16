@@ -27,10 +27,11 @@ public class ChatbotService {
    private final MemberRepository memberRepository;
    private final CounselingLogRepository counselingLogRepository;
    private final SolutionRepository solutionRepository;
+
     //사용자의 default 챗봇 변경
     @Transactional
-    public void updateDefaultChatbot(Long memberId, String ChatbotType) {
-        Member member = memberRepository.findById(memberId)
+    public void updateDefaultChatbot(String email, String ChatbotType) {
+        Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
         member.setChatbot(ChatbotType);
         memberRepository.save(member);
@@ -38,8 +39,8 @@ public class ChatbotService {
     }
 
     //사용자의 default 챗봇 조회
-    public GetChatbotTypeResponseDto getDefaultChatbot(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+    public GetChatbotTypeResponseDto getDefaultChatbot(String email) {
+        Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
         return new ChatbotResponseDto.GetChatbotTypeResponseDto(member.getChatbot());
     }

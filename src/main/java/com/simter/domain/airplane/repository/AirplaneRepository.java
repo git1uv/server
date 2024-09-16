@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface AirplaneRepository extends JpaRepository<Airplane, Long> {
     Optional<Airplane> findFirstByReceiverId_IdOrderByCreatedAtDesc(Long receiverId);
+
 }

@@ -20,8 +20,15 @@ public enum SuccessStatus implements BaseCode {
     MAIL_DELETE("200","편지 삭제에 성공하였습니다."),
     MAIL_STARRED("200","편지 즐겨찾기에 성공하였습니다."),
 
+    //종이비행기
+    AIRPLANE_GET("200","종이비행기 조회에 성공하였습니다."),
+    AIRPLANE_CREATE("200","종이비행기 생성에 성공하였습니다."),
 
     //챗봇
+
+    CHATBOT_TYPE_CHANGE("200","챗봇 종류 변경에 성공하였습니다."),
+    CHATBOT_TYPE_GET("200","챗봇 종류 조회에 성공하였습니다."),
+
     CHATBOT_SESSION_START("200","챗봇 종류 선택에 성공하였습니다."),
     DEFAULT_CHATBOT("200","사용자의 기본 챗봇 타입 조회에 성공하였습니다."),
     CHATBOT_SESSION_END("200","챗봇 세션 종료에 성공하였습니다."),
