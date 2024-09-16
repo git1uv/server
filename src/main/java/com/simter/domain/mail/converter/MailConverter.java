@@ -19,7 +19,7 @@ public class MailConverter {
                 .build();
     }
 
-    private MailGetResponseDto.MailDto convertToMailDto(Mail mail) {
+    public MailGetResponseDto.MailDto convertToMailDto(Mail mail) {
         return MailGetResponseDto.MailDto.builder()
                 .mailId(mail.getId())
                 .isRead(mail.getIsRead())

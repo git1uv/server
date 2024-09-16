@@ -64,6 +64,13 @@ public class MailService {
         }
     }
 
+    //특정 메일 조회
+    public MailGetResponseDto.MailDto getMail(Long mailId) {
+        Mail mail = mailRepository.findById(mailId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
+        return mailConverter.convertToMailDto(mail);
+    }
+
 
 
 }
