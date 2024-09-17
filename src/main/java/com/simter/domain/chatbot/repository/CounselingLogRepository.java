@@ -1,5 +1,6 @@
 package com.simter.domain.chatbot.repository;
 
+import com.simter.domain.calendar.entity.Calendars;
 import com.simter.domain.chatbot.entity.CounselingLog;
 import com.simter.domain.member.entity.Member;
 import java.time.LocalDate;
@@ -16,5 +17,6 @@ public interface CounselingLogRepository extends JpaRepository<CounselingLog, Lo
     @Query("SELECT c FROM CounselingLog c WHERE c.user = :member AND DATE(c.startedAt) = :date")
     List<CounselingLog> findByUserAndDate(@Param("member") Member member, @Param("date") LocalDate date);
 
+    List<CounselingLog> findByCalendars(Calendars calendars);
 
 }

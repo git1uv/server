@@ -1,6 +1,5 @@
 package com.simter.domain.calendar.converter;
 
-import com.simter.domain.calendar.dto.CalendarsResponseDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDayCounselingLogDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDayDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDaySolutionDto;
@@ -9,7 +8,7 @@ import com.simter.domain.calendar.dto.CalendarsResponseDto.NewCalendarsDto;
 import com.simter.domain.calendar.entity.Calendars;
 import com.simter.domain.chatbot.entity.CounselingLog;
 import com.simter.domain.chatbot.entity.Solution;
-import com.simter.domain.chatbot.repository.CalendarCounselingLogRepository;
+import com.simter.domain.chatbot.repository.CounselingLogRepository;
 import com.simter.domain.member.entity.Member;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,19 +20,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CalendarsConverter {
 
-    private final CalendarCounselingLogRepository calendarCounselingLogRepository;
+    CounselingLogRepository counselingLogRepository;
 
     public CalendarsHomeDayDto convertToMonthlyCalendar(Member member, Calendars calendars) {
-        Optional<CounselingLog> counselingLog = Optional.ofNullable(
-            calendarCounselingLogRepository.findByUserAndCalendarsDate(member, calendars.getDate()).get()
-                .getCounselingLog());
-        if (counselingLog.isPresent()) {
+        List<CounselingLog> counselingLogs = counselingLogRepository.findByCalendars(calendars);
+        if (!counselingLogs.isEmpty()) {
             return CalendarsHomeDayDto.builder()
                 .calendarId(calendars.getId())
                 .date(calendars.getDate())
                 .emotion(calendars.getEmotion())
                 .hasCounseling(true)
-                .chatbotType(counselingLog.get().getChatbotType())
+                .chatbotType(counselingLogs.getFirst().getChatbotType())
                 .build();
         } else {
             return CalendarsHomeDayDto.builder()
