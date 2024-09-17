@@ -1,5 +1,6 @@
 package com.simter.domain.chatbot.entity;
 
+import com.simter.domain.calendar.entity.Calendars;
 import com.simter.domain.member.entity.Member;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -24,6 +25,10 @@ public class CounselingLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Member user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "calendar_id")
+    private Calendars calendars;
 
     @Column(nullable = false, length = 100)
     private String chatbotType;
