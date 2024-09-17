@@ -21,13 +21,7 @@ public class SimterApplication {
         System.setProperty("KAKAO_URI", dotenv.get("KAKAO_URI"));
         System.setProperty("MAIL_NAME", dotenv.get("MAIL_NAME"));
         System.setProperty("MAIL_PW", dotenv.get("MAIL_PW"));
-        System.setProperty("AWS_ACCESS_KEY_ID", dotenv.get("AWS_ACCESS_KEY_ID"));
-        System.setProperty("AWS_SECRET_ACCESS_KEY", dotenv.get("AWS_SECRET_ACCESS_KEY"));
-        System.setProperty("AWS_REGION", dotenv.get("AWS_REGION"));
         System.setProperty("CLAUDE_API_KEY", dotenv.get("CLAUDE_API_KEY"));
-
-
-
         SpringApplication.run(SimterApplication.class, args);
     }
 }
