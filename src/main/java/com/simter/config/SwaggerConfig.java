@@ -1,5 +1,6 @@
 package com.simter.config;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.models.Components;
@@ -17,6 +18,8 @@ import org.springframework.context.annotation.Configuration;
 )
 @Configuration
 public class SwaggerConfig {
+    private Dotenv dotenv = Dotenv.load();
+    private String SERVER_URL = dotenv.get("SERVER_URL");
     @Bean
     public OpenAPI OpenAPI() {
 
@@ -28,10 +31,8 @@ public class SwaggerConfig {
                         .type(SecurityScheme.Type.HTTP) // HTTP 방식
                         .scheme("bearer")
                         .bearerFormat("JWT"));
-
-
         return new OpenAPI()
-                .addServersItem(new Server().url("/"))
+                .addServersItem(new Server().url(SERVER_URL))
                 .info(new io.swagger.v3.oas.models.info.Info())
                 .addSecurityItem(securityRequirement)
                 .components(components);
