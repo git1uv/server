@@ -17,8 +17,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @RequiredArgsConstructor
 public class OAuthController {
-    KakaoOAuthService kakaoOAuthService;
-    MemberRepository memberRepository;
+    private final KakaoOAuthService kakaoOAuthService;
+    private final MemberRepository memberRepository;
+
     @PostMapping("/api/v1/login/kakao")
     public void login(@RequestParam("code") String code, HttpServletResponse response)
         throws IOException {
@@ -38,7 +39,7 @@ public class OAuthController {
         if (memberRepository.existsByEmail(email)) {
             redirectUrl = "/api/v1/main";
         } else {
-            redirectUrl = UriComponentsBuilder.fromUriString("/api/v1/signup/nickname")
+            redirectUrl = UriComponentsBuilder.fromUriString("/signup/nickname")
                 .queryParam("token", token)
                 .queryParam("email", email)
                 .queryParam("loginType", "kakao")
