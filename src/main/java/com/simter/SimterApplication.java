@@ -25,6 +25,7 @@ public class SimterApplication {
         System.setProperty("MAIL_NAME", dotenv.get("MAIL_NAME"));
         System.setProperty("MAIL_PW", dotenv.get("MAIL_PW"));
         System.setProperty("CLAUDE_API_KEY", dotenv.get("CLAUDE_API_KEY"));
+        System.setProperty("SERVER_URL", dotenv.get("SERVER_URL"));
         SpringApplication.run(SimterApplication.class, args);
     }
     @PostConstruct
