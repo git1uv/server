@@ -58,7 +58,7 @@ public class MailService {
     public void changeStarred(Long mailId) {
         Mail mail = mailRepository.findByIdAndIsDeletedFalseAndCreatedAtBefore(mailId, LocalDateTime.now())
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MAIL_NOT_FOUND));
-        mail.setIsStarred(true);
+        mail.setIsStarred();
         mailRepository.save(mail);
     }
 
