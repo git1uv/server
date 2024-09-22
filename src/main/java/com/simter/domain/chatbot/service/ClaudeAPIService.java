@@ -66,7 +66,7 @@ public class ClaudeAPIService {
     // Claude API를 호출
     private Mono<String> callClaudeAPI(String systemPrompt, String conversationContext, int maxTokens) {
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "claude-3-5-sonnet-20240620");
+        requestBody.put("model", "claude-3-haiku-20240307");
         requestBody.put("max_tokens", maxTokens);
 
         Map<String, Object> userMessageContent = new HashMap<>();
