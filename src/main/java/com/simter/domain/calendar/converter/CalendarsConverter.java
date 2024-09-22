@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CalendarsConverter {
 
-    CounselingLogRepository counselingLogRepository;
+    private final CounselingLogRepository counselingLogRepository;
 
     public CalendarsHomeDayDto convertToMonthlyCalendar(Member member, Calendars calendars) {
         List<CounselingLog> counselingLogs = counselingLogRepository.findByCalendars(calendars);

@@ -74,7 +74,7 @@ public class MemberController {
 
     @Operation(summary = "비밀번호 재발송 API", description = "비밃번호를 재생성해서 유저에게 메일 발송하는 API")
     @PatchMapping("/api/v1/login/temp-pw")
-    public ApiResponse<JwtTokenDto> tempPw(@RequestBody PasswordReissueDto passwordReissueDto)
+    public ApiResponse<Void> tempPw(@RequestBody PasswordReissueDto passwordReissueDto)
         throws MessagingException {
         memberService.tempPw(passwordReissueDto.getEmail());
         return ApiResponse.onSuccess(null);
