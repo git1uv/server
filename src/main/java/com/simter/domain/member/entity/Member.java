@@ -33,10 +33,11 @@ public class Member implements UserDetails {
     private String nickname;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean hasAirplane = false;
 
     @Column(length = 50)
-    @ColumnDefault("half")
+    @ColumnDefault("H")
     private String chatbot;
 
     @Column(length = 50)
@@ -47,9 +48,11 @@ public class Member implements UserDetails {
 
     @Column(nullable = false)
     @Setter
+    @Builder.Default
     private boolean mailAlert = false;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean status = true;
 
     @Column(nullable = true)

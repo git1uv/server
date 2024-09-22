@@ -35,6 +35,7 @@ public class CounselingLog {
 
     @CreatedDate
     @Column(nullable = true)
+    @Builder.Default
     private LocalDateTime startedAt = LocalDateTime.now();
 
     @Column(nullable = true)

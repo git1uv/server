@@ -37,13 +37,16 @@ public class Mail {
 
     @Column(nullable = false)
     @Setter
+    @Builder.Default
     private Boolean isRead = false;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isDeleted = false;
 
     @Column(nullable = false)
     @ColumnDefault("false")
+    @Builder.Default
     private Boolean isStarred = false;
 
     public void setIsStarred() {
