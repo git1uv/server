@@ -22,9 +22,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class OAuth2UserService extends DefaultOAuth2UserService {
 
-    private final MemberRepository memberRepository;
-    private final JwtTokenProvider jwtTokenProvider;
-
     @Transactional
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
