@@ -2,6 +2,9 @@ package com.simter.domain.chatbot.service;
 
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
+import com.simter.domain.calendar.converter.CalendarsConverter;
+import com.simter.domain.calendar.entity.Calendars;
+import com.simter.domain.calendar.repository.CalendarsRepository;
 import com.simter.domain.chatbot.converter.ChatbotConverter;
 import com.simter.domain.chatbot.dto.ClaudeRequestDto;
 import com.simter.domain.chatbot.dto.ClaudeResponseDto;
@@ -50,6 +53,7 @@ public class ClaudeAPIService {
     private final ChatbotRepository chatbotRepository;
     private final CounselingLogRepository counselingLogRepository;
     private final SolutionRepository solutionRepository;
+    private final CalendarsRepository calendarsRepository;
 
     private static final String OVERALL_SUMMARY = "전체 요약:";
     private static final String USER_SUMMARY = "사용자 요약:";
@@ -66,7 +70,7 @@ public class ClaudeAPIService {
     // Claude API를 호출
     private Mono<String> callClaudeAPI(String systemPrompt, String conversationContext, int maxTokens) {
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "claude-3-5-sonnet-20240620");
+        requestBody.put("model", "claude-3-haiku-20240307");
         requestBody.put("max_tokens", maxTokens);
 
         Map<String, Object> userMessageContent = new HashMap<>();
@@ -121,6 +125,7 @@ public class ClaudeAPIService {
                     ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, messageWithoutEmotion, emotion);
                     chatbotRepository.save(assistantMessage);
 
+
                     return ChatbotConverter.toClaudeResponseDto(assistantMessage);
                 });
     }
@@ -138,11 +143,11 @@ public class ClaudeAPIService {
                 + "사용자 요약은 사용자가 한 말을 종합해서 최대한 정성스럽게 요약해줘. 친구가 너한테 고민상담을 한 것처럼 말해줘. 사용자라는 단어는 언급하지마"
                 + "Claude 요약은 Claude가 한 말을 종합해서 최대한 정성스럽게 요약해줘. 친구가 너한테 고민상담을 했고, 너가 한 말을 종합해서 조언을 하는 방향으로 . Claude라는 단어는 언급하지마"
                 + "그리고 최대 176로 이 서비스에 다시 올 사용자를 위해 고민하던 것들은 사라졌는지, 해결되었는지, 또는 계속 고민 중인지 걱정하면서 더 이야기할 것들은 없는지 확인하는 편지를 써줘"
-                + "답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~, 전체 요약는 20자, 사용자 요약, Claude 요약은 각각 250자에서 300자로, 추천 행동은 각각 50자 이내로, 편지는 176자 이내로 해줘";
+                + "답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~, 전체 요약은 10자, 사용자 요약, Claude 요약은 각각 250자에서 300자로, 추천 행동은 각각 50자 이내로, 편지는 176자 이내로 해줘";
 
         // 프롬프트 작성
         String systemPrompt = "너의 임무는 아래 대화를 요약해서 사용자에게 보여주는 것이다. " +
-                "사용자가 말한 내용과 챗봇이 답변한 내용을 각각 300자 이내로 요약하고, 사용자가 하면 좋을 것 같은 행동 3가지,편지를 만들어줘.";
+                "전체 요약은 10자, 사용자가 말한 내용과 챗봇이 답변한 내용을 각각 300자 이내로 요약하고, 사용자가 하면 좋을 것 같은 행동 3가지,편지를 만들어줘.";
 
         // Claude API 호출 및 상담 로그 업데이트
         return callClaudeAPI(systemPrompt, conversationContext, 1024)
@@ -153,6 +158,13 @@ public class ClaudeAPIService {
                             .getJSONObject(0)
                             .getString("text");
 
+                    CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)
+                            .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
+
+                    if (existingLog.getCalendars() != null) {
+                        throw new ErrorHandler(ErrorStatus.CHATBOT_ALREADY_ENDED);
+                    }
+
                     // Claude의 응답에서 title, summary, suggestion 추출
                     String title = extractTitle(assistantResponseText);
                     String userSummary = extractUserSummary(assistantResponseText); // 사용자 요약 추출
@@ -160,15 +172,17 @@ public class ClaudeAPIService {
                     extractLetter(assistantResponseText, counselingLogRepository.findById(counselingLogId).get().getUser(), counselingLogRepository.findById(counselingLogId).get().getChatbotType());
                     log.info("assistantResponseText : {} ", assistantResponseText);
 
-                    CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)
-                            .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
 
-                    CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary);
+                    Calendars calendar = CalendarsConverter.solutionToCalendar(existingLog);
+                    calendarsRepository.save(calendar);
+
+                    CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary, calendar);
                     counselingLogRepository.save(updatedLog);
                     List<String> suggestedActions = extractSuggestedActions(assistantResponseText, updatedLog);
                     log.info("suggestedActions : {}", suggestedActions);
 
                     List<Solution> savedSolutions = solutionRepository.findAllByCounselingLogId(updatedLog.getId());
+
                     return Mono.just(ChatbotConverter.toCounselingDto(updatedLog,savedSolutions));
                 });
     }
