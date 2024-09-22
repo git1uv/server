@@ -1,11 +1,12 @@
 package com.simter.config;
 
+import static java.lang.System.getenv;
+
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -35,9 +37,9 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final Dotenv dotenv = Dotenv.load();
+    Map<String, String> env = getenv();
     private String secretKey = Base64.getEncoder().encodeToString(
-        Objects.requireNonNull(dotenv.get("JWT_SECRET")).getBytes());
+        Objects.requireNonNull(env.get("JWT_SECRET")).getBytes());
     private final MemberRepository memberRepository;
     private static final String AUTHORITIES_KEY = "ROLE_USER";
 

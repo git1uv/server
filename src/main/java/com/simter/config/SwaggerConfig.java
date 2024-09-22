@@ -1,6 +1,7 @@
 package com.simter.config;
 
-import io.github.cdimascio.dotenv.Dotenv;
+import static java.lang.System.getenv;
+
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.models.Components;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.Arrays;
+import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,8 +21,8 @@ import org.springframework.context.annotation.Configuration;
 )
 @Configuration
 public class SwaggerConfig {
-    private Dotenv dotenv = Dotenv.load();
-    private String SERVER_URL = dotenv.get("SERVER_URL");
+    Map<String, String> env = getenv();
+    private String SERVER_URL = env.get("SERVER_URL");
 
     @Bean
     public OpenAPI OpenAPI() {

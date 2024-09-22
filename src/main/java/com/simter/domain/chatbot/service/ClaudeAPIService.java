@@ -1,5 +1,7 @@
 package com.simter.domain.chatbot.service;
 
+import static java.lang.System.getenv;
+
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.domain.calendar.converter.CalendarsConverter;
@@ -32,7 +34,6 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import io.github.cdimascio.dotenv.Dotenv;
 import java.util.HashMap;
 import java.util.Map;
 import reactor.core.publisher.Mono;
@@ -42,13 +43,12 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Transactional
 public class ClaudeAPIService {
-
+    Map<String, String> env = getenv();
     private final MailConverter mailConverter;
     private final MailRepository mailRepository;
     private final MemberRepository memberRepository;
-    private Dotenv dotenv = Dotenv.load();
     private WebClient webClient = WebClient.builder().build();
-    private String API_KEY = dotenv.get("CLAUDE_API_KEY");
+    private String API_KEY = env.get("CLAUDE_API_KEY");
     private final String CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
     private final ChatbotRepository chatbotRepository;
     private final CounselingLogRepository counselingLogRepository;
