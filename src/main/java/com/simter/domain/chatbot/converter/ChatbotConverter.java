@@ -1,5 +1,6 @@
 package com.simter.domain.chatbot.converter;
 
+import com.simter.domain.calendar.entity.Calendars;
 import com.simter.domain.chatbot.dto.ClaudeRequestDto;
 import com.simter.domain.chatbot.dto.ClaudeResponseDto;
 import com.simter.domain.chatbot.dto.CounselingResponseDto;
@@ -67,19 +68,21 @@ public class ChatbotConverter {
                 .suggestion(counselingLog.getSuggestion())
                 .endedAt(formatDateTime(counselingLog.getEndedAt()))
                 .solutions(toSolutionDtoList(solutions))
+                .calendarId(counselingLog.getCalendars().getId())
                 .build();
     }
 
-    public static CounselingLog updateCounselingLog(CounselingLog existingLog, String title, String userSummary, String assistantSummary) {
+    public static CounselingLog updateCounselingLog(CounselingLog existingLog, String title, String userSummary, String assistantSummary, Calendars calendars) {
         return CounselingLog.builder()
-                .id(existingLog.getId()) // 기존 id 유지
-                .startedAt(existingLog.getStartedAt()) // 기존 startedAt 유지
-                .user(existingLog.getUser()) // 기존 사용자 정보 유지
-                .chatbotType(existingLog.getChatbotType()) // 기존 chatbot_type 유지
-                .title(title) // 새로운 title
-                .summary(userSummary) // 새로운 summary
-                .suggestion(assistantSummary) // 새로운 suggestion
-                .endedAt(LocalDateTime.now()) // 새로운 endedAt 값
+                .id(existingLog.getId())
+                .startedAt(existingLog.getStartedAt())
+                .user(existingLog.getUser())
+                .chatbotType(existingLog.getChatbotType())
+                .title(title)
+                .summary(userSummary)
+                .suggestion(assistantSummary)
+                .endedAt(LocalDateTime.now())
+                .calendars(calendars)
                 .build();
     }
 

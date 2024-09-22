@@ -2,6 +2,9 @@ package com.simter.domain.chatbot.service;
 
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
+import com.simter.domain.calendar.converter.CalendarsConverter;
+import com.simter.domain.calendar.entity.Calendars;
+import com.simter.domain.calendar.repository.CalendarsRepository;
 import com.simter.domain.chatbot.converter.ChatbotConverter;
 import com.simter.domain.chatbot.dto.ClaudeRequestDto;
 import com.simter.domain.chatbot.dto.ClaudeResponseDto;
@@ -50,6 +53,7 @@ public class ClaudeAPIService {
     private final ChatbotRepository chatbotRepository;
     private final CounselingLogRepository counselingLogRepository;
     private final SolutionRepository solutionRepository;
+    private final CalendarsRepository calendarsRepository;
 
     private static final String OVERALL_SUMMARY = "전체 요약:";
     private static final String USER_SUMMARY = "사용자 요약:";
@@ -121,6 +125,7 @@ public class ClaudeAPIService {
                     ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, messageWithoutEmotion, emotion);
                     chatbotRepository.save(assistantMessage);
 
+
                     return ChatbotConverter.toClaudeResponseDto(assistantMessage);
                 });
     }
@@ -163,12 +168,16 @@ public class ClaudeAPIService {
                     CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)
                             .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
 
-                    CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary);
+                    Calendars calendar = CalendarsConverter.solutionToCalendar(existingLog);
+                    calendarsRepository.save(calendar);
+
+                    CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary, calendar);
                     counselingLogRepository.save(updatedLog);
                     List<String> suggestedActions = extractSuggestedActions(assistantResponseText, updatedLog);
                     log.info("suggestedActions : {}", suggestedActions);
 
                     List<Solution> savedSolutions = solutionRepository.findAllByCounselingLogId(updatedLog.getId());
+
                     return Mono.just(ChatbotConverter.toCounselingDto(updatedLog,savedSolutions));
                 });
     }

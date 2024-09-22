@@ -15,6 +15,7 @@ public class CounselingResponseDto {
     @AllArgsConstructor
     public static class CounselingDto {
         private Long counselingLogId;
+        private Long calendarId;
         private String title;
         private String summary;
         private String suggestion;

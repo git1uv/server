@@ -6,6 +6,7 @@ import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsDaySolutionD
 import com.simter.domain.calendar.dto.CalendarsResponseDto.CalendarsHomeDayDto;
 import com.simter.domain.calendar.dto.CalendarsResponseDto.NewCalendarsDto;
 import com.simter.domain.calendar.entity.Calendars;
+import com.simter.domain.chatbot.dto.CounselingResponseDto.CounselingDto;
 import com.simter.domain.chatbot.entity.CounselingLog;
 import com.simter.domain.chatbot.entity.Solution;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
@@ -78,4 +79,14 @@ public class CalendarsConverter {
             .solution(solutions)
             .build();
     }
+
+    public static Calendars solutionToCalendar(CounselingLog counselingLog){
+        return Calendars.builder()
+            .userId(counselingLog.getUser())
+            .date(LocalDate.now())
+            .emotion("none")
+            .diary("")
+            .build();
+    }
+
 }
