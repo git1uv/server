@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
     private Dotenv dotenv = Dotenv.load();
     private String SERVER_URL = dotenv.get("SERVER_URL");
+
     @Bean
     public OpenAPI OpenAPI() {
         Server localServer = new Server();
