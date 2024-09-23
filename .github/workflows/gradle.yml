@@ -29,3 +29,60 @@ jobs:
 
     - name: Build with Gradle Wrapper
       run: ./gradlew clean build --exclude-task test --warning-mode all
+
+     # Docker 이미지 Build
+    - name: docker image build
+      run:
+        echo "Building Docker image..."
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest .
+
+    # DockerHub Login
+    - name: docker login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+  # Docker hub 로 push
+    - name: Docker Hub push
+      run:
+        echo "Pushing Docker image to Docker Hub..."
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest
+
+  # push 한 이미지를 ec2에서 pull 받아서 실행
+  run-docker-image-on-ec2:
+    needs: build-docker-image
+    runs-on: self-hosted
+
+    steps:
+      - name: docker pull
+        run : sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/simter
+
+      - name: docker stop container
+        run: |
+          if [ $(sudo docker ps -a -q -f name=simter-container) ]; then
+            sudo docker stop simter-container
+            sudo docker rm simter-container
+          fi
+
+      - name: docker run new container
+        run: sudo docker run -d -p 8080:8080 --name simter-container \
+          -e DB_URL=${{ secrets.DB_URL }} \
+          -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+          -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+          -e ACCESS_TOKEN_EXP=${{ secrets.ACCESS_TOKEN_EXP }} \
+          -e REFRESH_TOKEN_EXP=${{ secrets.REFRESH_TOKEN_EXP }} \
+          -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+          -e OAUTH_ID=${{ secrets.OAUTH_ID }} \
+          -e OAUTH_PW=${{ secrets.OAUTH_PW }} \
+          -e KAKAO_ID=${{ secrets.KAKAO_ID }} \
+          -e KAKAO_URI=${{ secrets.KAKAO_URI }} \
+          -e KAKAO_SECRET=${{ secrets.KAKAO_SECRET }} \
+          -e MAIL_NAME=${{ secrets.MAIL_NAME }} \
+          -e MAIL_PW=${{ secrets.MAIL_PW }} \
+          -e CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }} \
+          -e SERVER_URL=${{ secrets.SERVER_URL }} \
+          ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest
+
+      - name: delete old docker image
+        run: sudo docker system prune -f
