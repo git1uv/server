@@ -64,6 +64,12 @@ jobs:
             sudo docker stop simter-container
             sudo docker rm simter-container
           fi
+      - name: Debugging environment variables
+        run: |
+          echo "DB_URL=$DB_URL"
+          echo "DB_USER=$DB_USER"
+          echo "DB_PW=$DB_PW"
+          echo "SERVER_URL=$SERVER_URL"
 
       - name: docker run new container
         run: sudo docker run --verbose -d -p 8080:8080 --name simter-container \
