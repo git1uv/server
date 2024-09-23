@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: Java CI/CD with Gradle
 
 on:
   push:
@@ -79,9 +79,10 @@ jobs:
           -e KAKAO_URI=${{ secrets.KAKAO_URI }} \
           -e KAKAO_SECRET=${{ secrets.KAKAO_SECRET }} \
           -e MAIL_NAME=${{ secrets.MAIL_NAME }} \
-          -e MAIL_PW=${{ secrets.MAIL_PW }} \
+          -e "MAIL_PW=${{ secrets.MAIL_PW }}" \
           -e CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }} \
           -e SERVER_URL=${{ secrets.SERVER_URL }} \
+          -e JAVA_HOME=/usr/local/openjdk-21 \
           ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest
 
       - name: delete old docker image
