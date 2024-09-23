@@ -68,10 +68,9 @@ jobs:
       - name: docker run new container
         run: sudo docker run -d -p 8080:8080 --name simter-container \
           -e DB_URL=${{ secrets.DB_URL }} \
-          -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-          -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-          -e ACCESS_TOKEN_EXP=${{ secrets.ACCESS_TOKEN_EXP }} \
-          -e REFRESH_TOKEN_EXP=${{ secrets.REFRESH_TOKEN_EXP }} \
+          -e DB_USER=${{ secrets.DB_USER }} \
+          -e DB_PW=${{ secrets.DB_PW }} \
+          -e DB_ROOTPW=${{ secrets.DB_ROOTPW }} \
           -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
           -e OAUTH_ID=${{ secrets.OAUTH_ID }} \
           -e OAUTH_PW=${{ secrets.OAUTH_PW }} \
