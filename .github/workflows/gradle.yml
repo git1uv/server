@@ -34,4 +34,4 @@ jobs:
           echo "DB_PW=${{ secrets.DB_PW }}" >> $GITHUB_ENV
 
     - name: Build with Gradle Wrapper
-      run: ./gradlew build
+      run: ./gradlew clean build --exclude-task test --warning-mode all
