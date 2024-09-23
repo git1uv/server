@@ -34,7 +34,7 @@ jobs:
     - name: docker image build
       run:
         echo "Building Docker image..."
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest .
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simter .
 
     # DockerHub Login
     - name: docker login
@@ -47,7 +47,7 @@ jobs:
     - name: Docker Hub push
       run:
         echo "Pushing Docker image to Docker Hub..."
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/simter
 
   # push 한 이미지를 ec2에서 pull 받아서 실행
   run-docker-image-on-ec2:
@@ -82,7 +82,7 @@ jobs:
           -e CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }} \
           -e SERVER_URL=${{ secrets.SERVER_URL }} \
           -e JAVA_HOME=/usr/local/openjdk-21 \
-          ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/simter
 
       - name: delete old docker image
         run: sudo docker system prune -f
