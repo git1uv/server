@@ -51,7 +51,7 @@ jobs:
 
   # push 한 이미지를 ec2에서 pull 받아서 실행
   run-docker-image-on-ec2:
-    needs: build-docker-image
+    needs: build
     runs-on: self-hosted
 
     steps:
