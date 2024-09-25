@@ -64,3 +64,10 @@ dependencyManagement {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+jar{
+	enabled = false
+}
+tasks.named("jar") {
+	enabled = false
+}
