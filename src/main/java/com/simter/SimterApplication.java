@@ -6,7 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SimterApplication {
+public class ㅎㅑㅅSimterApplication {
 
     public static void main(String[] args) {
 

@@ -27,12 +27,12 @@ public class Calendars {
     private LocalDate date;
 
     @Column(length = 100)
-    @ColumnDefault("none")
-    private String emotion;
+    @Builder.Default
+    private String emotion = "none";
 
     @Column(length = 300)
-    @ColumnDefault("")
-    private String diary;
+    @Builder.Default
+    private String diary = "";
 
     public void setDiary(String content) {
         this.diary = content;
