@@ -2,7 +2,9 @@ package com.simter.domain.member.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.simter.apiPayload.ApiResponse;
 import com.simter.domain.member.dto.JwtTokenDto;
+import com.simter.domain.member.dto.MemberRequestDto.SocialLoginDto;
 import com.simter.domain.member.repository.MemberRepository;
 import com.simter.domain.member.service.KakaoOAuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +23,7 @@ public class OAuthController {
     private final MemberRepository memberRepository;
 
     @PostMapping("/api/v1/login/kakao")
-    public void login(@RequestParam("code") String code, HttpServletResponse response)
+    public ApiResponse<SocialLoginDto> login(@RequestParam("code") String code)
         throws IOException {
         JsonNode res = kakaoOAuthService.getAccessToken(code);
         String accessToken = res.get("access_token").toString();
@@ -34,18 +36,14 @@ public class OAuthController {
             .build();
 
         String email = kakaoOAuthService.getEmail(accessToken);
-        String redirectUrl;
 
-        if (memberRepository.existsByEmail(email)) {
-            redirectUrl = "/api/v1/main";
-        } else {
-            redirectUrl = UriComponentsBuilder.fromUriString("/signup/nickname")
-                .queryParam("token", token)
-                .queryParam("email", email)
-                .queryParam("loginType", "kakao")
-                .build().toUriString();
-        }
-        response.sendRedirect(redirectUrl);
+        SocialLoginDto response = SocialLoginDto.builder()
+            .loginType("kakao")
+            .token(token)
+            .email(email)
+            .isMember(memberRepository.existsByEmail(email))
+            .build();
+        return ApiResponse.onSuccess(response);
 
     }
 }
