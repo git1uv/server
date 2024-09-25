@@ -70,4 +70,15 @@ public class MemberRequestDto {
         @NotNull String oldPassword;
         @NotNull String newPassword;
     }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class SocialLoginDto {
+        @NotNull String email;
+        @NotNull JwtTokenDto token;
+        @NotNull String loginType;
+        @NotNull boolean isMember;
+    }
 }

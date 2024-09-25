@@ -16,6 +16,7 @@ public class CounselingResponseDto {
     public static class CounselingDto {
         private Long counselingLogId;
         private Long calendarId;
+        private String chatbotType;
         private String title;
         private String summary;
         private String suggestion;

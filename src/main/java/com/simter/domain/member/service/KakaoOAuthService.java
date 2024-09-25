@@ -1,9 +1,11 @@
 package com.simter.domain.member.service;
 
+import static java.lang.System.getenv;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class KakaoOAuthService {
 
-    private final Dotenv dotenv;
+    Map<String, String> env = getenv();
 
     public JsonNode getAccessToken(String code) throws JsonProcessingException {
 
@@ -26,10 +28,10 @@ public class KakaoOAuthService {
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
-        body.add("client_id", dotenv.get("KAKAO_ID"));
-        body.add("redirect_uri", dotenv.get("KAKAO_URI"));
+        body.add("client_id", env.get("KAKAO_ID"));
+        body.add("redirect_uri", env.get("KAKAO_URI"));
         body.add("code", code);
-        body.add("client_secret", dotenv.get("KAKAO_SECRET"));
+        body.add("client_secret", env.get("KAKAO_SECRET"));
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(body, headers);
         RestTemplate rt = new RestTemplate();

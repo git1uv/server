@@ -1,14 +1,16 @@
 package com.simter.config;
 
-import io.github.cdimascio.dotenv.Dotenv;
+import static java.lang.System.getenv;
+
+import java.util.Map;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-    private Dotenv dotenv = Dotenv.load();
-    private String SERVER_URL = dotenv.get("SERVER_URL");
+    Map<String,String> env = getenv();
+    private String SERVER_URL = env.get("SERVER_URL");
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {

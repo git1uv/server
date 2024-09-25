@@ -153,9 +153,7 @@ public class MemberService extends DefaultOAuth2UserService {
         LocalDateTime dateTime = LocalDateTime.now();
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        member.changeStatusToInactive();;
-        member.setInactiveDate(dateTime);
-        memberRepository.save(member);
+        memberRepository.delete(member);
     }
 
     //닉네임, 비밀번호, 이메일 유효 검증
