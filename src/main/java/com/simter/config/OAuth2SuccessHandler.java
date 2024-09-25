@@ -17,8 +17,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    JwtTokenProvider jwtTokenProvider;
-    MemberRepository memberRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final MemberRepository memberRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
