@@ -18,6 +18,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                         "https://localhost:3000",
                         "http://localhost:3000",
+                        "https://simter.site",
                         SERVER_URL
                 )
                 .allowedMethods("GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS")
