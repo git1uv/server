@@ -29,7 +29,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String token = jwtToken.getAccessToken();
         String redirectUrl;
         if (memberRepository.existsByEmail(email)) {
-            redirectUrl = "/api/v1/main";
+            redirectUrl = UriComponentsBuilder.fromUriString("/api/v1/main")
+                .queryParam("token", token)
+                .build().toUriString();
         } else {
             redirectUrl = UriComponentsBuilder.fromUriString("/api/v1/signup/nickname")
                 .queryParam("token", token)

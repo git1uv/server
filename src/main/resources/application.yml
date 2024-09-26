@@ -20,6 +20,7 @@ spring:
           google:
             client-id: ${OAUTH_ID}
             client-secret: ${OAUTH_PW}
+            redirect-uri: ${GOOGLE_URI}
             scope: profile, email
           kakao:
             client-id: ${KAKAO_ID}
