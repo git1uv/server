@@ -86,8 +86,12 @@ public class CalendarsService {
                 .date(date)
                 .build();
             Calendars newCalendar = CalendarsConverter.convertToEntity(newCalendarsDto);
-            Calendars savedCalendar = calendarsRepository.save(newCalendar);
-            return CalendarsConverter.convertToDailyCalendar(Optional.of(savedCalendar), date, new ArrayList<>(), new ArrayList<>());
+            if (calendarsRepository.existsByUserIdAndDate(member, date)) {
+                Calendars savedCalendar = calendarsRepository.save(newCalendar);
+                return CalendarsConverter.convertToDailyCalendar(Optional.of(savedCalendar), date, new ArrayList<>(), new ArrayList<>());
+            } else {
+                throw new ErrorHandler(ErrorStatus.CALENDAR_ALREADY_EXISTS);
+            }
         }
     }
 

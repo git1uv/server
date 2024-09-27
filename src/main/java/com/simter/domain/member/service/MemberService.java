@@ -10,6 +10,7 @@ import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.dto.MainDto;
 import com.simter.domain.member.dto.MemberRequestDto.PasswordChangeDto;
 import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
+import com.simter.domain.member.dto.MemberRequestDto.SocialRegisterDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
 import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
 import com.simter.domain.member.entity.Member;
@@ -53,6 +54,24 @@ public class MemberService extends DefaultOAuth2UserService {
         RegisterDto newRegisterDto = RegisterDto.builder()
             .email(email)
             .password(encryptedPassword)
+            .nickname(nickname)
+            .loginType(loginType)
+            .build();
+        Member member = MemberConverter.convertToEntity(newRegisterDto);
+        if (!memberRepository.existsByEmail(email)) {
+            memberRepository.save(member);
+        }
+    }
+
+    //소셜 회원가입
+    public void register(SocialRegisterDto socialRegisterDto) {
+        String email = socialRegisterDto.getEmail();
+        String nickname = socialRegisterDto.getNickname();
+        String loginType = socialRegisterDto.getLoginType();
+        validateNickname(nickname);
+        RegisterDto newRegisterDto = RegisterDto.builder()
+            .email(email)
+            .password("")
             .nickname(nickname)
             .loginType(loginType)
             .build();
@@ -112,7 +131,6 @@ public class MemberService extends DefaultOAuth2UserService {
     }
 
     //메인화면 api
-
     public MainDto main(String email) {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -121,8 +139,14 @@ public class MemberService extends DefaultOAuth2UserService {
             .nickname(member.getNickname())
             .airplane(member.isHasAirplane())
             .build();
-        member.setMailAlert(false);
         return mainDto;
+    }
+
+    //새 메일 알림 끄기
+    public void turnOffMailAlert(String email, String mailAlert){
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        member.setMailAlert(Boolean.parseBoolean(mailAlert));
     }
 
     //닉네임 변경

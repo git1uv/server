@@ -29,11 +29,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String token = jwtToken.getAccessToken();
         String redirectUrl;
         if (memberRepository.existsByEmail(email)) {
-            redirectUrl = UriComponentsBuilder.fromUriString("/api/v1/main")
+            redirectUrl = UriComponentsBuilder.fromUriString("https://simter.site/main")
                 .queryParam("token", token)
                 .build().toUriString();
         } else {
-            redirectUrl = UriComponentsBuilder.fromUriString("/api/v1/signup/nickname")
+            redirectUrl = UriComponentsBuilder.fromUriString("https://simter.site/signup/nickname")
                 .queryParam("token", token)
                 .queryParam("email", email)
                 .queryParam("loginType", "google")

@@ -52,6 +52,7 @@ public enum ErrorStatus implements BaseCode {
     //달력 관련 에러
     DAILY_CALENDAR_NOT_FOUND(HttpStatus.BAD_REQUEST, "CALENDAR4001", "일일 달력 데이터가 없습니다."),
     CALENDAR_NOT_FOUND(HttpStatus.BAD_REQUEST, "CALENDAR4002", "달력 데이터가 없습니다."),
+    CALENDAR_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "CALENDAR4003", "이미 달력 데이터가 존재합니다."),
 
     //해결책 관련 에러
     SOLUTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "SOLUTION4001", "해결책이 없습니다.");
