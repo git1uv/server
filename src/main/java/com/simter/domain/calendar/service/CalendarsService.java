@@ -69,7 +69,7 @@ public class CalendarsService {
 
         Optional<Calendars> calendar = calendarsRepository.findByUserIdAndDate(member, date);
         if (calendar.isPresent()) {
-            List<CounselingLog> counselingLogs = counselingLogRepository.findByUserAndDate(member, date);
+            List<CounselingLog> counselingLogs = counselingLogRepository.findByCalendars(calendar.get());
             List<CalendarsDaySolutionDto> solutionsResponse = new ArrayList<>();
             List<CalendarsDayCounselingLogDto> counselingLogsResponse = new ArrayList<>();
             for (CounselingLog log : counselingLogs) {
@@ -86,7 +86,7 @@ public class CalendarsService {
                 .date(date)
                 .build();
             Calendars newCalendar = CalendarsConverter.convertToEntity(newCalendarsDto);
-            if (calendarsRepository.existsByUserIdAndDate(member, date)) {
+            if (!calendarsRepository.existsByUserIdAndDate(member, date)) {
                 Calendars savedCalendar = calendarsRepository.save(newCalendar);
                 return CalendarsConverter.convertToDailyCalendar(Optional.of(savedCalendar), date, new ArrayList<>(), new ArrayList<>());
             } else {

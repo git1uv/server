@@ -26,7 +26,7 @@ public class CounselingLog {
     @JoinColumn(name = "user_id")
     private Member user;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar_id")
     private Calendars calendars;
 

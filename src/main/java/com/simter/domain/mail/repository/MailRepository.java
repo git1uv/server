@@ -26,6 +26,9 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
 
     // 삭제되지 않고 읽지 않은 메일 조회
     List<Mail> findByMemberAndIsDeletedFalseAndIsReadFalseAndCreatedAtBefore(Member member, LocalDateTime currentDateTime);
+
+    //멤버 관련 메일 삭제
+    void deleteByMember(Member member);
 }
 
 

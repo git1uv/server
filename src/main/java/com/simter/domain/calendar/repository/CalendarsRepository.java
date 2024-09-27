@@ -18,4 +18,8 @@ public interface CalendarsRepository extends JpaRepository<Calendars, Long> {
     Optional<Calendars> findByUserIdAndDate(@NotNull Member member, @NotNull LocalDate date);
 
     boolean existsByUserIdAndDate(@NotNull Member member, @NotNull LocalDate date);
+
+    void deleteByUserId(@NotNull Member member);
+
+    List<Calendars> findByUserId(@NotNull Member member);
 }

@@ -18,7 +18,7 @@ public class Solution {
     @Column(name = "solution_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "counseling_log_id")
     private CounselingLog counselingLog;
 

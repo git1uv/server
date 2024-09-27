@@ -1,10 +1,16 @@
 package com.simter.domain.member.service;
 
-import static org.springframework.security.core.context.SecurityContextHolder.setContext;
-
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.config.JwtTokenProvider;
+import com.simter.domain.airplane.repository.AirplaneRepository;
+import com.simter.domain.calendar.entity.Calendars;
+import com.simter.domain.calendar.repository.CalendarsRepository;
+import com.simter.domain.chatbot.entity.CounselingLog;
+import com.simter.domain.chatbot.repository.ChatbotRepository;
+import com.simter.domain.chatbot.repository.CounselingLogRepository;
+import com.simter.domain.chatbot.repository.SolutionRepository;
+import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.converter.MemberConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.dto.MainDto;
@@ -18,7 +24,8 @@ import com.simter.domain.member.repository.MemberRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -42,6 +49,12 @@ public class MemberService extends DefaultOAuth2UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender mailSender;
+    private final MailRepository mailRepository;
+    private final AirplaneRepository airplaneRepository;
+    private final CalendarsRepository calendarsRepository;
+    private final CounselingLogRepository counselingLogRepository;
+    private final SolutionRepository solutionRepository;
+    private final ChatbotRepository chatbotRepository;
 
     //회원가입
     public void register(RegisterDto registerRequestDto) {
@@ -174,10 +187,9 @@ public class MemberService extends DefaultOAuth2UserService {
 
     //회원 탈퇴
     public void deleteAccount(String email) {
-        LocalDateTime dateTime = LocalDateTime.now();
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        memberRepository.delete(member);
+        deleteAll(member);
     }
 
     //닉네임, 비밀번호, 이메일 유효 검증
@@ -220,6 +232,26 @@ public class MemberService extends DefaultOAuth2UserService {
         if (!Pattern.matches("^[가-힣a-zA-Z]{1,10}$", nickname)) {
             throw new ErrorHandler(ErrorStatus.INVALID_NICKNAME_FORMAT);
         }
+    }
+
+    //회원 탈퇴 시 관련 데이터 모두 삭제
+    public void deleteAll(Member member) {
+        mailRepository.deleteByMember(member);
+        airplaneRepository.deleteByReceiverId(member);
+        airplaneRepository.deleteBySenderId(member);
+        List<Calendars> calendars = calendarsRepository.findByUserId(member);
+        for (Calendars calendar : calendars) {
+            List<CounselingLog> logs = counselingLogRepository.findByCalendars(calendar);
+
+            for (CounselingLog log : logs) {
+                solutionRepository.deleteByCounselingLogId(log.getId());
+                chatbotRepository.deleteByCounselingLogId(log.getId());
+            }
+
+            counselingLogRepository.deleteByUserId(member);
+        }
+        calendarsRepository.deleteByUserId(member);
+        memberRepository.delete(member);
     }
 
 
