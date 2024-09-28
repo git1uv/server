@@ -37,6 +37,7 @@ public class Airplane {
 
     @Column(nullable = false)
     @ColumnDefault("false")
+    @Setter
     private Boolean isRead;
 
 }

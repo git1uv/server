@@ -147,6 +147,7 @@ public class MemberService extends DefaultOAuth2UserService {
     public MainDto main(String email) {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        //종이비행기
         MainDto mainDto = MainDto.builder()
             .mailAlert(member.isMailAlert())
             .nickname(member.getNickname())
