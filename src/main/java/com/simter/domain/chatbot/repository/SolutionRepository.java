@@ -15,5 +15,6 @@ public interface SolutionRepository extends JpaRepository<Solution, Long> {
 
     List<Solution> findAllByCounselingLogId(Long counselingLogId);
     List<Solution> findByCounselingLog(@NotNull CounselingLog counselingLog);
+    void deleteByCounselingLogId(Long counselingLogId);
 }
 

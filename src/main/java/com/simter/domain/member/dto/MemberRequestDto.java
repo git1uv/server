@@ -31,8 +31,15 @@ public class MemberRequestDto {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class EmailValidationRequestDto {
-        @NotNull String email;
+    public static class SocialRegisterDto {
+        @NotNull
+        private String email;
+
+        @NotNull
+        private String nickname;
+
+        @NotNull
+        private String loginType;
     }
 
     @Builder

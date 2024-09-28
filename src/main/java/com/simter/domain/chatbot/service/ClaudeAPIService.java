@@ -278,7 +278,7 @@ public class ClaudeAPIService {
     }
 
     private String extractEmotion(String response) {
-        List<String> emotions = Arrays.asList("평온", "슬픔", "웃음", "사람", "놀람", "피곤", "화남", "불안");
+        List<String> emotions = Arrays.asList("평온", "슬픔", "웃음", "사랑", "놀람", "피곤", "화남", "불안");
         return emotions.stream()
                 .filter(emotion -> response.contains(emotion))
                 .findFirst()

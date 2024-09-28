@@ -9,6 +9,7 @@ import com.simter.domain.member.dto.MemberRequestDto.NicknameChangeDto;
 import com.simter.domain.member.dto.MemberRequestDto.PasswordChangeDto;
 import com.simter.domain.member.dto.MemberRequestDto.PasswordReissueDto;
 import com.simter.domain.member.dto.MemberRequestDto.RegisterDto;
+import com.simter.domain.member.dto.MemberRequestDto.SocialRegisterDto;
 import com.simter.domain.member.dto.MemberResponseDto.EmailValidationResponseDto;
 import com.simter.domain.member.dto.MemberResponseDto.LoginResponseDto;
 import com.simter.domain.member.service.MemberService;
@@ -36,6 +37,13 @@ public class MemberController {
     @PostMapping("/api/v1/register/general")
     public ApiResponse<Void> register(@RequestBody RegisterDto registerDto) {
         memberService.register(registerDto);
+        return ApiResponse.onSuccess(null);
+    }
+
+    @Operation(summary = "회원가입 API", description = "이메일, 로그인 타입, 비밀번호, 닉네임을 저장해 회원가입하는 API")
+    @PostMapping("/api/v1/register/social")
+    public ApiResponse<Void> registerSocial(@RequestBody SocialRegisterDto socialRegisterDto) {
+        memberService.register(socialRegisterDto);
         return ApiResponse.onSuccess(null);
     }
 
@@ -87,6 +95,15 @@ public class MemberController {
         String email = jwtTokenProvider.getEmail(token.getAccessToken());
         MainDto res = memberService.main(email);
         return ApiResponse.onSuccess(res);
+    }
+
+    @Operation(summary = "새 편지 알림 끄기 API", description = "새 편지 알림을 끄는 API")
+    @PatchMapping("/api/v1/main/update-mail-alert")
+    public ApiResponse<Void> turnOffMailAlert(HttpServletRequest request, @RequestBody String mailAlert) {
+        JwtTokenDto token = jwtTokenProvider.resolveToken(request);
+        String email = jwtTokenProvider.getEmail(token.getAccessToken());
+        memberService.turnOffMailAlert(email, mailAlert);
+        return ApiResponse.onSuccess(null);
     }
 
     @Operation(summary = "닉네임 변경 API", description = "닉네임을 변경하는 API")

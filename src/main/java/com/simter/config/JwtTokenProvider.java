@@ -17,7 +17,9 @@ import io.jsonwebtoken.Claims;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,6 +31,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -78,6 +81,12 @@ public class JwtTokenProvider {
             .refreshToken(refreshToken)
             .build();
 
+    }
+
+    public JwtTokenDto generateSocialToken(String email) {
+        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
+        return generateToken(authentication, email);
     }
 
     public Authentication getAuthentication(String accessToken) {

@@ -19,4 +19,5 @@ public interface CounselingLogRepository extends JpaRepository<CounselingLog, Lo
 
     List<CounselingLog> findByCalendars(Calendars calendars);
 
+    void deleteByUserId(Member member);
 }

@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface ChatbotRepository extends JpaRepository<ChatbotMessage, Long> {
 
     List<ChatbotMessage> findByCounselingLogId(Long counselingLogId);
-
+    void deleteByCounselingLogId(Long counselingLogId);
 
 }
