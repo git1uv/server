@@ -12,6 +12,8 @@ import com.simter.domain.chatbot.entity.Solution;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
 import com.simter.domain.member.entity.Member;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -81,9 +83,10 @@ public class CalendarsConverter {
     }
 
     public static Calendars solutionToCalendar(CounselingLog counselingLog){
+        LocalDate koreanDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDate();
         return Calendars.builder()
             .userId(counselingLog.getUser())
-            .date(LocalDate.now())
+            .date(koreanDate)
             .emotion("none")
             .diary("")
             .build();
