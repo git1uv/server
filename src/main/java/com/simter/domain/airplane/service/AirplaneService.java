@@ -9,7 +9,9 @@ import com.simter.domain.airplane.entity.Airplane;
 import com.simter.domain.airplane.repository.AirplaneRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,12 +43,14 @@ public class AirplaneService {
         memberRepository.save(randomReceiver);
     }
 
-
+    @Transactional
     public AirplaneGetResponseDto getAirplane(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Airplane airplane = airplaneRepository.findFirstByReceiverId_IdOrderByCreatedAtDesc(member.getId())
                         .orElseThrow(() -> new ErrorHandler(ErrorStatus.AIRPLANE_NOT_FOUND));
+        airplane.setIsRead(true);
+        member.setHasAirplane(false);
         return AirplaneConverter.convertToDataDto(airplane);
     }
 
