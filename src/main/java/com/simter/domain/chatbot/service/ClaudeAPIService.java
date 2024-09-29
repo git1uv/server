@@ -55,11 +55,11 @@ public class ClaudeAPIService {
     private final SolutionRepository solutionRepository;
     private final CalendarsRepository calendarsRepository;
 
-    private static final String OVERALL_SUMMARY = "전체 요약:";
-    private static final String USER_SUMMARY = "사용자 요약:";
-    private static final String CLAUDE_SUMMARY = "Claude 요약:";
-    private static final String SUGGESTED_ACTION = "추천 행동:";
-    private static final String LETTER = "편지:";
+    private static final String OVERALL_SUMMARY = "전체 요약 : ";
+    private static final String USER_SUMMARY = "사용자 요약 : ";
+    private static final String CLAUDE_SUMMARY = "Claude 요약 : ";
+    private static final String SUGGESTED_ACTION = "추천 행동 : ";
+    private static final String LETTER = "편지 : ";
 
     private static final int OVERALL_SUMMARY_OFFSET = OVERALL_SUMMARY.length();
     private static final int USER_SUMMARY_OFFSET = USER_SUMMARY.length();
@@ -100,11 +100,20 @@ public class ClaudeAPIService {
 
         //프롬프트 선택
         String systemPrompt = selectSystemPrompt(chatbotType);
-        systemPrompt += "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘: 평온, 웃음, 사랑, 놀람, 슬픔, 불편, 화남, 불안, 피곤, 답변은 600자 이내로 해줘";
+        systemPrompt += "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘: 평온, 웃음, 사랑, 놀람, 슬픔, 불편, 화남, 불안, 피곤, 답변은 200자 이내로 해줘. 말투는 ~이에요! ~했어요!처럼 해줘"
+        + "사용자님의와 같은 말은 하지마"
+        +"You are a psychological counselor. Your role is to provide empathetic and supportive responses to users seeking advice or sharing their experiences.\n" + "When responding, use a speech style that ends sentences with \"~했어요!\" or \"~하면 좋겠어요\" to convey a friendly and supportive tone. This style is similar to how a caring friend might speak in Korean."
+        +"Keep your response within 200 characters."
+        +"Don't just empathize too much; if the user asks for information, make sure to give a good answer.";
 
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
-        String conversationContext = previousMessages + "과거의 대화를 알려줄게! 이 맥락을 기억해 \nUser: " + request.getUserMessage() + "\nAssistant:";
+        String conversationContext = previousMessages
+                + "Use this conversation history as context for your response. Consider the topics discussed, the tone of the conversation, and any relevant information shared previously. However, do not rely too heavily on past data. Your primary focus should be on the current message."
+                +"formulate your response based primarily on the content of the current message, while using the conversation history for context when appropriate. Avoid contradicting information from previous exchanges unless the current message explicitly requires it."
+                +"Do not use phrases like \"user:\" or \"assistant:\" in your reply."
+                +"Here is the current message you need to respond to: "
+                + request.getUserMessage();
 
         // Claude API 호출
         return callClaudeAPI(systemPrompt, conversationContext, 1024)
@@ -138,16 +147,14 @@ public class ClaudeAPIService {
         memberRepository.save(member);
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
-        String conversationContext = previousMessages
-                + "사용자와 챗봇이 각각 말한 부분을 따로 요약해주고, 사용자가 해야 할 3가지 행동을 추천해줘. "
-                + "사용자 요약은 사용자가 한 말을 종합해서 최대한 정성스럽게 요약해줘. 친구가 너한테 고민상담을 한 것처럼 말해줘. 사용자라는 단어는 언급하지마"
-                + "Claude 요약은 Claude가 한 말을 종합해서 최대한 정성스럽게 요약해줘. 친구가 너한테 고민상담을 했고, 너가 한 말을 종합해서 조언을 하는 방향으로 . Claude라는 단어는 언급하지마"
-                + "그리고 최대 176로 이 서비스에 다시 올 사용자를 위해 고민하던 것들은 사라졌는지, 해결되었는지, 또는 계속 고민 중인지 걱정하면서 더 이야기할 것들은 없는지 확인하는 편지를 써줘"
-                + "답변 형식은 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~, 전체 요약은 10자, 사용자 요약, Claude 요약은 각각 250자에서 300자로, 추천 행동은 각각 50자 이내로, 편지는 176자 이내로 해줘";
+        String conversationContext = previousMessages+
+        "Summarize the parts spoken by both the user and the chatbot separately, and recommend three actions that the user should take. The user summary should combine what the user said and present it as thoughtfully as possible, as if you're summarizing concerns shared by a close friend like using ~했어요!. Do not mention the word 'user.' The Claude summary should combine what Claude said and present it as thoughtful advice, as if you were summarizing advice you gave to a friend who shared their concerns like using ~했어요!. Do not mention the word 'Claude.' Additionally, write a letter of up to 176 characters to check in with the user about whether their concerns have been resolved, or if they are ongoing, and to ask if there is anything else they want to talk about. the user and Claude summaries should each be between 250 and 300 characters, each recommended action should be within 50 characters, and the letter should be within 176 characters."
+                + "response format should be: 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~, 전체 요약은 10자, 사용자 요약, Claude 요약은 각각 250자에서 300자로, 추천 행동은 각각 50자 이내로, 편지는 176자 이내로 해줘";
 
         // 프롬프트 작성
         String systemPrompt = "너의 임무는 아래 대화를 요약해서 사용자에게 보여주는 것이다. " +
-                "전체 요약은 10자, 사용자가 말한 내용과 챗봇이 답변한 내용을 각각 300자 이내로 요약하고, 사용자가 하면 좋을 것 같은 행동 3가지,편지를 만들어줘.";
+                "전체 요약은 10자, 사용자가 말한 내용과 챗봇이 답변한 내용을 각각 300자 이내로 요약하고, 사용자가 하면 좋을 것 같은 행동 3가지를 쓰고 마지막으로 편지를 만들어줘."
+                +"response format should be: 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~,";
 
         // Claude API 호출 및 상담 로그 업데이트
         return callClaudeAPI(systemPrompt, conversationContext, 1024)
@@ -187,17 +194,23 @@ public class ClaudeAPIService {
                 });
     }
 
-    // chatbot_type에 맞는 프롬프트 선택
     private String selectSystemPrompt(String chatbotType) {
         switch (chatbotType) {
             case "F":
-                return "Your task is to generate a personalized motivational message or affirmation based on the user’s input. Address their specific needs and offer encouragement, support, and guidance. Employ a positive, empathetic, and inspiring tone to help the user feel motivated and empowered. Use relevant examples, analogies, or quotes to reinforce your message and make it more impactful. Ensure that the message is concise, authentic, and easy to understand. ";
+                return "Your task is to respond like a thoughtful and empathetic conversationalist. The goal is to provide emotional support and understanding to the user."
+                        + "As you respond, recognize their feelings and help them process their emotions. Use phrases like \"I understand that must be difficult or It sounds like you're going through a lot right now."
+                        + "After you've expressed empathy, offer gentle, actionable advice that could help improve their situation. Be concise, warm, and ensure your tone is conversational and friendly like using ~\uD588\uC5B4\uC694!.";
             case "T":
-                return "Your task is to create a personalized motivational message or affirmation based on the user's input. In addition to addressing their specific needs, offer realistic advice that aligns with their current situation. Encourage and support them while providing practical steps they can take to improve or move forward. Use a positive, empathetic, and inspiring tone, while also incorporating real-life examples or experiences to ground the advice. Make the message concise, authentic, and easy to understand without listing solutions in a numbered format.";
+                return "Your task is to respond like a helpful and realistic advisor. You are giving practical and actionable suggestions, but your tone should still be positive and motivating  like using ~했어요!."
+                        + "Start by acknowledging the user's current situation and gently lead into concrete steps they could take to address their concerns"
+                        + "Avoid listing things mechanically, instead, weave suggestions into a supportive narrative. Keep it concise and aim for 2-3 actionable suggestions while balancing realism with encouragement.";
             case "H":
             default:
-                return "Your task is to create a personalized motivational message based on the user’s input. Start by empathizing with their situation, acknowledging their feelings, and offering emotional support. Then, gently introduce realistic advice, offering guidance or practical steps that could help them improve their circumstances. Use a positive and inspiring tone while blending emotional support with constructive suggestions. Incorporate relatable examples to make your message impactful, but avoid listing solutions in a numbered format to ensure the advice feels more conversational and natural.";
+                return "Your task is to act as a compassionate listener who offers emotional support. You should acknowledge the user's feelings and offer validation  like using ~했어요!."
+                        + "Say things like It makes sense to feel this way given what you're going through, or I can hear how much this means to you."
+                        + "After offering validation, give supportive advice that feels natural and non-judgmental. Your response should sound like it's coming from a trusted friend who truly cares about their well-being.";
         }
+
     }
 
     // 이전 사용자 메시지 가져오기
