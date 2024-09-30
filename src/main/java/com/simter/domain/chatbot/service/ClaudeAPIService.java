@@ -40,6 +40,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.HashMap;
 import java.util.Map;
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import reactor.core.publisher.Mono;
 
@@ -71,7 +72,7 @@ public class ClaudeAPIService {
         userMessageContent.put("content", conversationContext);
 
         requestBody.put("messages", new Object[]{userMessageContent});
-        requestBody.put("system", systemPrompt + "\n" + conversationContext);
+        requestBody.put("system", systemPrompt);
 
         // Claude API 호출
         return webClient.post()
@@ -84,70 +85,118 @@ public class ClaudeAPIService {
                 .bodyToMono(String.class);
     }
 
-    // Claude 채팅 서비스
     @Transactional
     public Mono<ClaudeResponseDto> chatWithClaude(ClaudeRequestDto request, Long counselingLogId) {
         CounselingLog counselingLog = counselingLogRepository.findById(counselingLogId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
         String chatbotType = counselingLog.getChatbotType();
 
-        //프롬프트 선택
-        String systemPrompt = selectSystemPrompt(chatbotType);
-        systemPrompt += "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘: 평온, 웃음, 사랑, 놀람, 슬픔, 불편, 화남, 불안, 피곤, 답변은 200자 이내로 해줘. 말투는 ~이에요! ~했어요!처럼 해줘"
-        + "사용자님의와 같은 말은 하지마"
-        +"You are a psychological counselor. Your role is to provide empathetic and supportive responses to users seeking advice or sharing their experiences.\n" + "When responding, use a speech style that ends sentences with \"~했어요!\" or \"~하면 좋겠어요\" to convey a friendly and supportive tone. This style is similar to how a caring friend might speak in Korean."
-        +"Keep your response within 200 characters."
-        +"Don't just empathize too much; if the user asks for information, make sure to give a good answer.";
-
         // 이전 대화 내역 가져오기
         String previousMessages = getPreviousUserMessages(counselingLogId);
-        String conversationContext = previousMessages
-                + "Use this conversation history as context for your response. Consider the topics discussed, the tone of the conversation, and any relevant information shared previously. However, do not rely too heavily on past data. Your primary focus should be on the current message."
-                +"formulate your response based primarily on the content of the current message, while using the conversation history for context when appropriate. Avoid contradicting information from previous exchanges unless the current message explicitly requires it."
-                +"Do not use phrases like \"user:\" or \"assistant:\" in your reply."
-                +"Here is the current message you need to respond to: "
-                + request.getUserMessage();
+        String conversationContext = "<conversation>\n"
+                + "<conversationHistory>\n"
+                + previousMessages + "Don't worry too much about the previous messages.\n"
+                + "</conversationHistory>\n"
+                + "<currentMessage>\n"
+                + "    Here is the current message you need to respond to:\n"
+                + "    " + request.getUserMessage() + "\n"
+                + "</currentMessage>\n"
+                + "</conversation>\n";
+
+
+        // 프롬프트 선택
+        String chatbotPrompt = selectSystemPrompt(chatbotType);
+        String systemPrompt = "<systemPrompt>\n"
+                + "<emotion>\n"
+                + "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘:\n"
+                + "평온, 웃음, 사랑, 놀람, 슬픔, 불편, 화남, 불안, 피곤\n"
+                + "</emotion>\n"
+                + "<message>\n"
+                + "You are a psychological counselor. Your role is to provide empathetic and supportive responses to users seeking advice or sharing their experiences.\n"
+                + "Keep this summary between 300 and 350 characters.\n"
+                + "</message>\n"
+                + "<example>\n"
+                + "<response>\n"
+                + "<emotion>"
+                + "피곤"
+                + "</emotion>"
+                + "<message>그랬군요ㅠㅠ 마음이 아프네요... 힘들 땐 너무 자책하지 말고 한 번 쉬어가는 것도 좋아요!</message>"
+                + "</response>"
+                + "</example>"
+                + "</systemPrompt>";
+
+        // 전체 XML 구조 통합
+        String xmlPrompt = "<conversationAnalysis>\n"
+                + systemPrompt
+                + "</conversationAnalysis>\n";
 
         // Claude API 호출
-        return callClaudeAPI(systemPrompt, conversationContext, 1024)
-                .map(response -> {
-                    // 응답을 JSON 파싱
-                    String assistantResponseText = new JSONObject(response)
-                            .getJSONArray("content")
-                            .getJSONObject(0)
-                            .getString("text");
-
-                    String emotion = extractEmotion(assistantResponseText);
-                    String messageWithoutEmotion = removeEmotionLine(assistantResponseText);
-
-                    // 사용자 메시지와 챗봇 응답을 DB에 저장
-                    ChatbotMessage userMessage = ChatbotConverter.toUserMessage(counselingLog, request);
-                    chatbotRepository.save(userMessage);
-
-                    ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, messageWithoutEmotion, emotion);
-                    chatbotRepository.save(assistantMessage);
-
-
-                    return ChatbotConverter.toClaudeResponseDto(assistantMessage);
-                });
+        return callClaudeAPI(xmlPrompt, conversationContext, 1024)
+                .flatMap(response -> parseXMLChatResponse(response, counselingLog, request));
     }
 
+    private Mono<ClaudeResponseDto> parseXMLChatResponse(String xmlResponse, CounselingLog counselingLog, ClaudeRequestDto request) {
+        try {
+            // XML 파서 초기화
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            String assistantResponseText = new JSONObject(xmlResponse)
+                    .getJSONArray("content")
+                    .getJSONObject(0)
+                    .getString("text");
+
+            log.info("chatting response : {}", xmlResponse);
+
+            InputSource is = new InputSource(new StringReader(assistantResponseText));
+            Document doc = builder.parse(is);
+            log.info("chatting response : {}", doc);
+
+            // XML에서 필드 추출
+            String emotion = doc.getElementsByTagName("emotion").item(0).getTextContent();
+            log.info("emotion : {}", emotion);
+            String message = doc.getElementsByTagName("message").item(0).getTextContent();
+            log.info("message : {}", message);
+
+            // 사용자 메시지와 챗봇 응답을 DB에 저장
+            ChatbotMessage userMessage = ChatbotConverter.toUserMessage(counselingLog, request);
+            chatbotRepository.save(userMessage);
+
+            ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, message, emotion);
+            chatbotRepository.save(assistantMessage);
+
+            return Mono.just(ChatbotConverter.toClaudeResponseDto(assistantMessage));
+        } catch (Exception e) {
+            log.error("Error parsing XML response: {}", e.getMessage());
+            return Mono.error(new ErrorHandler(ErrorStatus.CHATBOT_ERROR));
+        }
+    }
+
+    // XML 요소 텍스트 내용을 안전하게 가져오는 헬퍼 메소드
+    private String getElementTextContent(Document doc, String tagName) {
+        NodeList nodeList = doc.getElementsByTagName(tagName);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            return nodeList.item(0).getTextContent();
+        } else {
+            log.warn("No element found for tag: {}", tagName);
+            return ""; // 또는 적절한 기본값을 반환
+        }
+    }
 
     private String selectSystemPrompt(String chatbotType) {
         switch (chatbotType) {
             case "F":
-                return "Your task is to respond like a thoughtful and empathetic conversationalist. The goal is to provide emotional support and understanding to the user."
+                return "<role> Your task is to respond like a thoughtful and empathetic conversationalist. The goal is to provide emotional support and understanding to the user."
                         + "As you respond, recognize their feelings and help them process their emotions. Use phrases like \"I understand that must be difficult or It sounds like you're going through a lot right now."
-                        + "After you've expressed empathy, offer gentle, actionable advice that could help improve their situation. Be concise, warm, and ensure your tone is conversational and friendly like using ~\uD588\uC5B4\uC694!.";
+                        + "After you've expressed empathy, offer gentle, actionable advice that could help improve their situation. Be concise, warm, and ensure your tone is conversational and friendly like using ~했어요!.</role>";
             case "T":
-                return "Your task is to respond like a helpful and realistic advisor. You are giving practical and actionable suggestions, but your tone should still be positive and motivating  like using ~했어요!."
+                return "<role>Your task is to respond like a helpful and realistic advisor. You are giving practical and actionable suggestions, but your tone should still be positive and motivating  like using ~했어요!."
                         + "Start by acknowledging the user's current situation and gently lead into concrete steps they could take to address their concerns"
-                        + "Avoid listing things mechanically, instead, weave suggestions into a supportive narrative. Keep it concise and aim for 2-3 actionable suggestions while balancing realism with encouragement.";
+                        + "Avoid listing things mechanically, instead, weave suggestions into a supportive narrative. Keep it concise and aim for 2-3 actionable suggestions while balancing realism with encouragement.</role>";
             case "H":
             default:
-                return "Your task is to act as a compassionate listener who offers emotional support. You should acknowledge the user's feelings and offer validation  like using ~했어요!."
+                return "<role>Your task is to act as a compassionate listener who offers emotional support. You should acknowledge the user's feelings and offer validation  like using ~했어요!."
                         + "Say things like It makes sense to feel this way given what you're going through, or I can hear how much this means to you."
-                        + "After offering validation, give supportive advice that feels natural and non-judgmental. Your response should sound like it's coming from a trusted friend who truly cares about their well-being.";
+                        + "After offering validation, give supportive advice that feels natural and non-judgmental. Your response should sound like it's coming from a trusted friend who truly cares about their well-being.</role>";
         }
 
     }
@@ -158,13 +207,6 @@ public class ClaudeAPIService {
         return previousMessages.stream()
                 .map(message -> message.getSender() + ": " + message.getContent())
                 .collect(Collectors.joining("\n"));
-    }
-
-    private LocalDateTime generateRandomTime() {
-        long minSeconds = 5 * 60 * 60;  //5시간
-        long maxSeconds = 24 * 60 * 60; //24시간
-        long randomSeconds = ThreadLocalRandom.current().nextLong(minSeconds, maxSeconds);
-        return LocalDateTime.now().plusSeconds(randomSeconds);
     }
 
     private String extractEmotion(String response) {
@@ -377,6 +419,13 @@ public class ClaudeAPIService {
             log.error("Error parsing XML response: {}", e.getMessage());
             return Mono.error(new ErrorHandler(ErrorStatus.COUNSELING_LOG_ERROR));
         }
+    }
+
+    private LocalDateTime generateRandomTime() {
+        long minSeconds = 5 * 60 * 60;  //5시간
+        long maxSeconds = 24 * 60 * 60; //24시간
+        long randomSeconds = ThreadLocalRandom.current().nextLong(minSeconds, maxSeconds);
+        return LocalDateTime.now().plusSeconds(randomSeconds);
     }
 }
 

@@ -49,6 +49,7 @@ public enum ErrorStatus implements BaseCode {
     COUNSELING_LOG_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHATBOT4002", "상담일지가 없습니다."),
     CHATBOT_ALREADY_ENDED(HttpStatus.BAD_REQUEST, "CHATBOT4003", "이미 종료된 챗봇입니다."),
     COUNSELING_LOG_ERROR(HttpStatus.BAD_REQUEST, "CHATBOT4004", "상담일지 작성 중 오류가 발생했습니다."),
+    CHATBOT_ERROR(HttpStatus.BAD_REQUEST, "CHATBOT4005", "챗봇 작동 중 오류가 발생했습니다."),
 
     //달력 관련 에러
     DAILY_CALENDAR_NOT_FOUND(HttpStatus.BAD_REQUEST, "CALENDAR4001", "일일 달력 데이터가 없습니다."),
