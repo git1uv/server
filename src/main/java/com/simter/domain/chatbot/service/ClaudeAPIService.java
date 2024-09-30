@@ -23,12 +23,14 @@ import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
 import java.io.StringReader;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
@@ -231,7 +233,6 @@ public class ClaudeAPIService {
     @Transactional
     public Mono<CounselingResponseDto.CounselingDto> summarizeConversation(Long counselingLogId) {
         Member member = counselingLogRepository.findById(counselingLogId).get().getUser();
-        member.setMailAlert(true);
         memberRepository.save(member);
 
         // 이전 대화 내역 가져오기
@@ -396,10 +397,25 @@ public class ClaudeAPIService {
             log.info("letter : {}", letter);
 
             //편지 저장
-            Mail mail = MailConverter.toMailEntity(counselingLogRepository.findById(counselingLogId).get().getUser(), letter, counselingLogRepository.findById(counselingLogId).get().getChatbotType());
+            Member member = counselingLogRepository.findById(counselingLogId).get().getUser();
+            Mail mail = MailConverter.toMailEntity(member, letter, counselingLogRepository.findById(counselingLogId).get().getChatbotType());
             LocalDateTime randomTime = generateRandomTime();
             mail.setCreatedAt(randomTime);
             mailRepository.save(mail);
+
+            // 랜덤 시간 이후에 mailAlert 설정
+            long delay = Duration.between(LocalDateTime.now(), randomTime).toMillis();
+            if (delay > 0) {
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        Thread.sleep(delay);
+                        member.setMailAlert(true);
+                        memberRepository.save(member);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            }
 
             // 상담 로그 업데이트
             CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)

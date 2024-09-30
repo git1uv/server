@@ -45,15 +45,6 @@ public class MailService {
         return mailConverter.convertToMailGetResponseDto(mails);
     }
 
-    //특정 사용자의 즐겨찾기한 메일 조회
-    public MailGetResponseDto getStarredMails(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
-        List<Mail> mails = mailRepository.findByMemberAndIsStarredTrueAndCreatedAtBeforeOrderByCreatedAtDesc(member, LocalDateTime.now());
-        return mailConverter.convertToMailGetResponseDto(mails);
-    }
-
     //특정 메일의 즐겨찾기 여부 변경
     public void changeStarred(Long mailId) {
         Mail mail = mailRepository.findByIdAndIsDeletedFalseAndCreatedAtBefore(mailId, LocalDateTime.now())
