@@ -28,12 +28,13 @@ public class ChatbotConverter {
                 .build();
     }
 
-    public static ChatbotMessage toAssistantMessage(CounselingLog counselingLog, String assistantResponse, String emotion) {
+    public static ChatbotMessage toAssistantMessage(CounselingLog counselingLog, String assistantResponse, String emotion, boolean redFlag) {
         return ChatbotMessage.builder()
                 .counselingLog(counselingLog)
                 .sender("ASSISTANT")
                 .content(assistantResponse)
                 .emotion(emotion)
+                .redFlag(redFlag)
                 .createdAt(LocalDateTime.now())
                 .build();
     }
@@ -41,6 +42,7 @@ public class ChatbotConverter {
     public static ClaudeResponseDto toClaudeResponseDto(ChatbotMessage chatbotMessage) {
         return ClaudeResponseDto.builder()
                 .counselingLogId(chatbotMessage.getCounselingLog().getId())
+                .redFlag(chatbotMessage.isRedFlag() ? "true" : "false")
                 .emotion(chatbotMessage.getEmotion())
                 .message(chatbotMessage.getContent())
                 .createdAt(formatDateTime(chatbotMessage.getCreatedAt()))

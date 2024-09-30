@@ -64,7 +64,7 @@ public class ClaudeAPIService {
     // Claude API를 호출
     private Mono<String> callClaudeAPI(String systemPrompt, String conversationContext, int maxTokens) {
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "claude-3-haiku-20240307");
+        requestBody.put("model", "claude-3-5-sonnet-20240620");
         requestBody.put("max_tokens", maxTokens);
 
         Map<String, Object> userMessageContent = new HashMap<>();
@@ -106,17 +106,33 @@ public class ClaudeAPIService {
 
         // 프롬프트 선택
         String chatbotPrompt = selectSystemPrompt(chatbotType);
-        String systemPrompt = "<systemPrompt>\n"
-                + "<emotion>\n"
-                + "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘:\n"
-                + "평온, 웃음, 사랑, 놀람, 슬픔, 불편, 화남, 불안, 피곤\n"
-                + "</emotion>\n"
-                + "<message>\n"
+        String systemPrompt = "<systemPrompt>"
+                + "<redflag>"
+                + "사용자의 currentMessage가 위험한 내용이나 우울증과 관련된 신호를 포함하는지 판단할 때는, 단순히 부정적인 단어만으로 판단하지 말고 전체적인 문맥을 반드시 고려해야 해 위험 신호는 사용자가 극단적인 감정을 표현하는 경우가 많지만, 이 표현이 반드시 위험한 상태를 의미하는 것은 아니야. 예를 들어, '죽고싶어'나 '죽을 거 같아'와 같은 직접적인 표현은 위험 신호로 간주될 수 있지만, 이런 표현이 사용자의 기분이나 상황을 정확히 반영하지 않을 수 있어. 다음은 부정적인 단어가 포함되어 있지만, 전체적인 의미는 긍정적인 경우의 예시야:\n"
+                + "    - '오늘 죽을 만큼 행복했어.' 이 문장은 행복한 감정을 표현하고 있으므로 redflag는 false야.\n"
+                + "    - '기분이 좋아서 죽을 거 같아.' 이 문장 역시 긍정적인 감정이 우세하기 때문에 redflag는 false야.\n"
+                + "    - '좋은 일이 너무 많아서 마치 죽을 만큼 기쁜 기분이야.' 이 문장은 좋은 감정을 강조하고 있으니 redflag는 false야.\n"
+                + "    - '기분이 좋아서 죽을 지경이야, 이런 날이 계속되면 좋겠어!' 이 문장도 긍정적인 의미로 해석되므로 redflag는 false야.\n"
+                + "    위의 예시들을 통해, 사용자의 메시지가 실제로 위험한지를 판단할 때에는 문맥을 신중히 고려해야 해. 즉, 부정적인 단어가 포함되어 있어도 그 문장이 전반적으로 긍정적인 감정을 전달하고 있다면 redflag를 false로 설정해야 해.\n"
+                + "    사용자의 메시지를 분석할 때는 다음과 같은 질문을 스스로에게 던져봐:\n"
+                + "    - 이 표현은 긍정적인 감정을 담고 있는가?\n"
+                + "    - 사용자의 전체적인 상황은 어떤가?\n"
+                + "    - 부정적인 단어가 사용되었지만, 맥락은 무엇인가?\n"
+                + "    이러한 질문들을 통해 보다 정확하게 redflag를 판별할 수 있도록 해줘."
+                + "</redflag>"
+                + "<emotion>"
+                + "사용자의 대화를 읽고 9개의 감정 중 하나를 반환해준 뒤 대화를 해줘:"
+                + "평온, 웃음, 사랑, 놀람, 슬픔, 불편, 화남, 불안, 피곤"
+                + "</emotion>"
+                + "<message>"
                 + "You are a psychological counselor. Your role is to provide empathetic and supportive responses to users seeking advice or sharing their experiences.\n"
-                + "Keep this summary between 300 and 350 characters.\n"
-                + "</message>\n"
-                + "<example>\n"
-                + "<response>\n"
+                + "Keep this summary between 300 and 350 characters."
+                + "</message>"
+                + "<example>"
+                + "<response>"
+                + "<redflag>"
+                + "false"
+                + "</redflag>"
                 + "<emotion>"
                 + "피곤"
                 + "</emotion>"
@@ -152,33 +168,24 @@ public class ClaudeAPIService {
             log.info("chatting response : {}", doc);
 
             // XML에서 필드 추출
-            String emotion = doc.getElementsByTagName("emotion").item(0).getTextContent();
+            String redflag = doc.getElementsByTagName("redflag").item(0).getTextContent().replace("\n", " ").trim();
+            log.info("redflag : {}", redflag);
+            String emotion = doc.getElementsByTagName("emotion").item(0).getTextContent().replace("\n", " ").trim();
             log.info("emotion : {}", emotion);
-            String message = doc.getElementsByTagName("message").item(0).getTextContent();
+            String message = doc.getElementsByTagName("message").item(0).getTextContent().replace("\n", " ").trim();
             log.info("message : {}", message);
 
             // 사용자 메시지와 챗봇 응답을 DB에 저장
             ChatbotMessage userMessage = ChatbotConverter.toUserMessage(counselingLog, request);
             chatbotRepository.save(userMessage);
 
-            ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, message, emotion);
+            ChatbotMessage assistantMessage = ChatbotConverter.toAssistantMessage(counselingLog, message, emotion, Boolean.parseBoolean(redflag));
             chatbotRepository.save(assistantMessage);
 
             return Mono.just(ChatbotConverter.toClaudeResponseDto(assistantMessage));
         } catch (Exception e) {
             log.error("Error parsing XML response: {}", e.getMessage());
             return Mono.error(new ErrorHandler(ErrorStatus.CHATBOT_ERROR));
-        }
-    }
-
-    // XML 요소 텍스트 내용을 안전하게 가져오는 헬퍼 메소드
-    private String getElementTextContent(Document doc, String tagName) {
-        NodeList nodeList = doc.getElementsByTagName(tagName);
-        if (nodeList != null && nodeList.getLength() > 0) {
-            return nodeList.item(0).getTextContent();
-        } else {
-            log.warn("No element found for tag: {}", tagName);
-            return ""; // 또는 적절한 기본값을 반환
         }
     }
 
@@ -215,12 +222,6 @@ public class ClaudeAPIService {
                 .filter(emotion -> response.contains(emotion))
                 .findFirst()
                 .orElse("평온");
-    }
-
-    // 감정 라인을 제거한 본문 추출
-    private String removeEmotionLine(String response) {
-        int startOfMessage = response.indexOf("\n\n") + 2;
-        return response.substring(startOfMessage).trim();
     }
 
     @Transactional
@@ -300,7 +301,8 @@ public class ClaudeAPIService {
                         + "</task>"
                 + "</conversationAnalysis>\n";
 
-        String systemPrompt = "answer format is following xml format.Don't forget print task tag <task>\n"
+        String systemPrompt = "answer format is following xml format.Don't forget print task tag "
+                + "<task>\n"
                 + "        <summary>\n"
                 + "            <title>\n"
                 + "                Write a title that summarizes the user's concerns and the advice you provided.\n"
@@ -367,8 +369,8 @@ public class ClaudeAPIService {
             log.info("doc : {}", doc);
 
             // XML에서 필드 추출
-//            String conversationAnalysis = doc.getElementsByTagName("task").item(0).getTextContent();
-//            log.info("task : {}", conversationAnalysis);
+            String conversationAnalysis = doc.getElementsByTagName("task").item(0).getTextContent();
+            log.info("task : {}", conversationAnalysis);
             String title = doc.getElementsByTagName("title").item(0).getTextContent();
             log.info("title : {}", title);
             String userSummary = doc.getElementsByTagName("userSummary").item(0).getTextContent().replace("\n", " ").trim();

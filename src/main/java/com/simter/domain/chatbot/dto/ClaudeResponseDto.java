@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClaudeResponseDto {
     Long counselingLogId;
+    String redFlag;
     String emotion;
     String message;
     String createdAt;
