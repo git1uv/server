@@ -28,17 +28,15 @@ public class AirplaneService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 종이비행기를 없는 사용자 중에서 랜덤으로 지정
+        // sender 제외하고 종이비행기를 없는 사용자 중에서 랜덤으로 지정
         List<Member> availableMembers = memberRepository.findAllByHasAirplane(false);
         if (availableMembers.isEmpty()) {
             throw new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND);
         }
-
+        availableMembers.remove(member);
         Member randomReceiver = availableMembers.get(new Random().nextInt(availableMembers.size()));
-
         Airplane airplane = AirplaneConverter.convertToEntity(requestDto, randomReceiver, member);
         airplaneRepository.save(airplane);
-
         randomReceiver.setHasAirplane(true);
         memberRepository.save(randomReceiver);
     }
