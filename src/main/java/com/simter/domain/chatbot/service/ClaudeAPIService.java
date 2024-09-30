@@ -23,10 +23,12 @@ import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
 import java.io.StringReader;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
@@ -401,11 +403,24 @@ public class ClaudeAPIService {
             CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)
                     .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
 
-            Calendars calendar = CalendarsConverter.solutionToCalendar(existingLog);
-            calendarsRepository.save(calendar);
+            //현재 날짜에 calendar 있으면 해당 id 반환하고 없으면 calendar 새로 생성
+            LocalDate today = LocalDate.now();
+
+            // 현재 날짜에 해당하는 calendar 찾기
+            Optional<Calendars> existingCalendar = calendarsRepository.findByUserIdAndDate(existingLog.getUser(), today);
+
+            Calendars calendar;
+            if (existingCalendar.isPresent()) {
+                calendar = existingCalendar.get();
+            } else {
+                calendar = CalendarsConverter.solutionToCalendar(existingLog);
+                calendarsRepository.save(calendar);
+            }
+
 
             CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary, calendar);
             counselingLogRepository.save(updatedLog);
+
 
             List<String> actions = Arrays.asList(action1, action2, action3);
             for (String action : actions) {
