@@ -22,12 +22,15 @@ import com.simter.domain.mail.entity.Mail;
 import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
+import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -36,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.util.HashMap;
 import java.util.Map;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -54,18 +59,6 @@ public class ClaudeAPIService {
     private final CounselingLogRepository counselingLogRepository;
     private final SolutionRepository solutionRepository;
     private final CalendarsRepository calendarsRepository;
-
-    private static final String OVERALL_SUMMARY = "전체 요약 : ";
-    private static final String USER_SUMMARY = "사용자 요약 : ";
-    private static final String CLAUDE_SUMMARY = "Claude 요약 : ";
-    private static final String SUGGESTED_ACTION = "추천 행동 : ";
-    private static final String LETTER = "편지 : ";
-
-    private static final int OVERALL_SUMMARY_OFFSET = OVERALL_SUMMARY.length();
-    private static final int USER_SUMMARY_OFFSET = USER_SUMMARY.length();
-    private static final int CLAUDE_SUMMARY_OFFSET = CLAUDE_SUMMARY.length();
-    private static final int SUGGESTED_ACTION_OFFSET = SUGGESTED_ACTION.length();
-    private static final int LETTER_OFFSET = LETTER.length();
 
     // Claude API를 호출
     private Mono<String> callClaudeAPI(String systemPrompt, String conversationContext, int maxTokens) {
@@ -139,60 +132,6 @@ public class ClaudeAPIService {
                 });
     }
 
-    // 챗봇 대화 종료 서비스 (종료 요청 시 상담일지 내용 생성)
-    @Transactional
-    public Mono<CounselingResponseDto.CounselingDto> summarizeConversation(Long counselingLogId) {
-        Member member = counselingLogRepository.findById(counselingLogId).get().getUser();
-        member.setMailAlert(true);
-        memberRepository.save(member);
-        // 이전 대화 내역 가져오기
-        String previousMessages = getPreviousUserMessages(counselingLogId);
-        String conversationContext = previousMessages+
-        "Summarize the parts spoken by both the user and the chatbot separately, and recommend three actions that the user should take. The user summary should combine what the user said and present it as thoughtfully as possible, as if you're summarizing concerns shared by a close friend like using ~했어요!. Do not mention the word 'user.' The Claude summary should combine what Claude said and present it as thoughtful advice, as if you were summarizing advice you gave to a friend who shared their concerns like using ~했어요!. Do not mention the word 'Claude.' Additionally, write a letter of up to 176 characters to check in with the user about whether their concerns have been resolved, or if they are ongoing, and to ask if there is anything else they want to talk about. the user and Claude summaries should each be between 250 and 300 characters, each recommended action should be within 50 characters, and the letter should be within 176 characters."
-                + "response format should be: 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~, 전체 요약은 10자, 사용자 요약, Claude 요약은 각각 250자에서 300자로, 추천 행동은 각각 50자 이내로, 편지는 176자 이내로 해줘";
-
-        // 프롬프트 작성
-        String systemPrompt = "너의 임무는 아래 대화를 요약해서 사용자에게 보여주는 것이다. " +
-                "전체 요약은 10자, 사용자가 말한 내용과 챗봇이 답변한 내용을 각각 300자 이내로 요약하고, 사용자가 하면 좋을 것 같은 행동 3가지를 쓰고 마지막으로 편지를 만들어줘."
-                +"response format should be: 전체 요약 : ~. 사용자 요약 : ~, Claude 요약 : ~ 추천 행동 : ~, 편지 : ~,";
-
-        // Claude API 호출 및 상담 로그 업데이트
-        return callClaudeAPI(systemPrompt, conversationContext, 1024)
-                .flatMap(response -> {
-                    // 응답을 JSON 파싱
-                    String assistantResponseText = new JSONObject(response)
-                            .getJSONArray("content")
-                            .getJSONObject(0)
-                            .getString("text");
-
-                    CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)
-                            .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
-
-                    if (existingLog.getCalendars() != null) {
-                        throw new ErrorHandler(ErrorStatus.CHATBOT_ALREADY_ENDED);
-                    }
-
-                    // Claude의 응답에서 title, summary, suggestion 추출
-                    String title = extractTitle(assistantResponseText);
-                    String userSummary = extractUserSummary(assistantResponseText); // 사용자 요약 추출
-                    String assistantSummary = extractAssistantSummary(assistantResponseText); // 챗봇 요약 추출
-                    extractLetter(assistantResponseText, counselingLogRepository.findById(counselingLogId).get().getUser(), counselingLogRepository.findById(counselingLogId).get().getChatbotType());
-                    log.info("assistantResponseText : {} ", assistantResponseText);
-
-
-                    Calendars calendar = CalendarsConverter.solutionToCalendar(existingLog);
-                    calendarsRepository.save(calendar);
-
-                    CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary, calendar);
-                    counselingLogRepository.save(updatedLog);
-                    List<String> suggestedActions = extractSuggestedActions(assistantResponseText, updatedLog);
-                    log.info("suggestedActions : {}", suggestedActions);
-
-                    List<Solution> savedSolutions = solutionRepository.findAllByCounselingLogId(updatedLog.getId());
-
-                    return Mono.just(ChatbotConverter.toCounselingDto(updatedLog,savedSolutions));
-                });
-    }
 
     private String selectSystemPrompt(String chatbotType) {
         switch (chatbotType) {
@@ -221,68 +160,6 @@ public class ClaudeAPIService {
                 .collect(Collectors.joining("\n"));
     }
 
-    // Claude 응답에서 title 추출
-    private String extractTitle(String response) {
-        int startIndex = response.indexOf(OVERALL_SUMMARY) + OVERALL_SUMMARY_OFFSET;
-        int endIndex = response.indexOf("\n", startIndex);
-        return response.substring(startIndex, endIndex).trim();
-    }
-
-    // Claude 응답에서 사용자 발언 요약 부분 추출
-    private String extractUserSummary(String response) {
-        int startIndex = response.indexOf(USER_SUMMARY) + USER_SUMMARY_OFFSET;
-        int endIndex = response.indexOf("\n", startIndex);
-        return response.substring(startIndex, endIndex).trim();
-    }
-
-    // Claude 응답에서 Claude 발언 요약 부분 추출
-    private String extractAssistantSummary(String response) {
-        int startIndex = response.indexOf(CLAUDE_SUMMARY) + CLAUDE_SUMMARY_OFFSET;
-        int endIndex = response.indexOf("\n", startIndex);
-        return response.substring(startIndex, endIndex).trim();
-    }
-
-    // Claude 응답에서 추천 행동 3가지를 추출
-    private List<String> extractSuggestedActions(String response, CounselingLog counselingLog) {
-        List<String> actions = new ArrayList<>();
-        int START_INDEX = response.indexOf(SUGGESTED_ACTION) + SUGGESTED_ACTION_OFFSET;
-        if (START_INDEX == -1) return actions;
-        String actionsText = response.substring(START_INDEX).trim();
-
-        // 각 줄을 개행(\n) 기준으로 분리
-        String[] actionLines = actionsText.split("\\n");
-
-        // 각 행동을 처리
-        for (String line : actionLines) {
-            // 숫자로 시작하는 포맷 (예: "1. 가벼운 스트레칭" 같은 형식) 처리
-            if (line.matches("\\d+\\.\\s.*")) {
-                String action = line.substring(line.indexOf(". ") + 2).trim(); // 숫자와 마침표, 공백 제거 후 추출
-                log.info("action : {}", action);
-                Solution solution = ChatbotConverter.createSolution(counselingLog, action);
-                solutionRepository.save(solution);
-
-                if (!action.isEmpty()) {
-                    actions.add(action);  // 비어있지 않으면 리스트에 추가
-                }
-            }
-            if (actions.size() == 3) break; // 최대 3개만 추가
-        }
-        return actions;
-    }
-
-    // Claude 응답에서 편지 내용 추출해서 DB에 저장
-    public String extractLetter(String response, Member member, String chatbotType) {
-        int startIndex = response.indexOf(LETTER) + LETTER_OFFSET;
-        int endIndex = response.length();
-        String mailContent = response.substring(startIndex, endIndex).trim();
-        log.info("mailContent : {}", mailContent);
-        Mail mail = MailConverter.toMailEntity(member, mailContent, chatbotType);
-        LocalDateTime randomTime = generateRandomTime();
-        mail.setCreatedAt(randomTime);
-        mailRepository.save(mail);
-        return null;
-    }
-
     private LocalDateTime generateRandomTime() {
         long minSeconds = 5 * 60 * 60;  //5시간
         long maxSeconds = 24 * 60 * 60; //24시간
@@ -303,4 +180,206 @@ public class ClaudeAPIService {
         int startOfMessage = response.indexOf("\n\n") + 2;
         return response.substring(startOfMessage).trim();
     }
+
+    @Transactional
+    public Mono<CounselingResponseDto.CounselingDto> summarizeConversation(Long counselingLogId) {
+        Member member = counselingLogRepository.findById(counselingLogId).get().getUser();
+        member.setMailAlert(true);
+        memberRepository.save(member);
+
+        // 이전 대화 내역 가져오기
+        String previousMessages = getPreviousUserMessages(counselingLogId);
+
+        String xmlPrompt = "<conversationAnalysis>\n"
+                + "    <conversation>\n"
+                + "        " + previousMessages + "\n"
+                + "    </conversation>\n"
+                + "    <task>\n"
+                + "        <summary>\n"
+                + "            <title>\n"
+                + "                Write a title that summarizes the user's concerns and the advice you provided.\n"
+                + "                Keep this title between 12 characters.\n"
+                + "            </title>\n"
+                + "            <userSummary>\n"
+                + "                Combine what the user said and present it as thoughtfully as possible.\n"
+                + "                Write as if you're summarizing concerns shared by a close friend.\n"
+                + "                Use the ~했어요 form in Korean to convey a friendly tone.\n"
+                + "                Do not mention the word 'user'.\n"
+                + "                Keep this summary between 250 and 300 characters.\n"
+                + "            </userSummary>\n"
+                + "            <claudeSummary>\n"
+                + "                Combine what Claude said and present it as thoughtful advice.\n"
+                + "                Write as if you were summarizing advice you gave to a friend who shared their concerns.\n"
+                + "                Use the ~했어요 form in Korean to convey a friendly tone.\n"
+                + "                Do not mention the word 'Claude'.\n"
+                + "                Keep this summary between 250 and 300 characters.\n"
+                + "            </claudeSummary>\n"
+                + "        </summary>\n"
+                + "        <recommendedActions>\n"
+                + "            <action1>\n"
+                + "                Suggest specific actions the user should take based on the conversation.\n"
+                + "                Each action should be within 50 characters.\n"
+                + "            </action1>\n"
+                + "            <action2>\n"
+                + "                Suggest specific actions the user should take based on the conversation.\n"
+                + "                Each action should be within 50 characters.\n"
+                + "            </action2>\n"
+                + "            <action3>\n"
+                + "                Suggest specific actions the user should take based on the conversation.\n"
+                + "                Each action should be within 50 characters.\n"
+                + "            </action3>\n"
+                + "        </recommendedActions>\n"
+                + "        <letter>\n"
+                + "            Write a letter of up to 176 characters.\n"
+                + "            Check in with the user about whether their concerns have been resolved.\n"
+                + "            If concerns are ongoing, acknowledge this.\n"
+                + "            Ask if there is anything else they want to talk about.\n"
+                + "        </letter>\n"
+                + "    </task>\n"
+                +"     <example>\n"
+                       +"<task>\n"
+                        + "<summary>\n"
+                        + "<title>초콜릿을 먹은 하루</title>\n"
+                        + "<userSummary>\n"
+                        + "오늘 맛있는 초콜릿을 먹었군요! 달콤하지만 쌉싸름하셨다니 맛있었겠네요. 다음에는 두바이초콜릿을 먹겠다는 다짐을 들으니 저도 달콤해지네요 :)\n"
+                        + "</userSummary>\n"
+                        + "<claudeSummary>\n"
+                        + "많은 양의 초콜릿을 많이 먹는 건 좋지 않지만, 적당량의 초콜릿을 먹었다면 건강에 정말 좋죠!\n"
+                        + "</claudeSummary>\n"
+                        + "</summary>\n"
+                        + "<recommendedActions>\n"
+                        + "<action1>따듯한 차 마시기</action1>\n"
+                        + "<action2>잠들기 전에 하루일기 작성하기</action2>\n"
+                        + "<action3>기분 좋지 않은 일이 있었다면 감정 쓰레기통에 버리기</action3>\n"
+                        + "</recommendedActions>\n"
+                        + "<letter>\n"
+                        + "저번에 같이 이야기했던 초콜릿은 맛있었나요? 더 이야기해보고 싶어요! 언제든지 기다리고 있을게요. 고민이나 하고 싶은 이야기가 있다면 저를 찾아와주세요!\n"
+                        + "</letter>\n"
+                        + "</task>"
+                + "</conversationAnalysis>\n";
+
+        String systemPrompt = "answer format is following xml format.Don't forget print task tag <task>\n"
+                + "        <summary>\n"
+                + "            <title>\n"
+                + "                Write a title that summarizes the user's concerns and the advice you provided.\n"
+                + "                Keep this title between 12 characters.\n"
+                + "            </title>\n"
+                + "            <userSummary>\n"
+                + "                Combine what the user said and present it as thoughtfully as possible.\n"
+                + "                Write as if you're summarizing concerns shared by a close friend.\n"
+                + "                Use the ~했어요 form in Korean to convey a friendly tone.\n"
+                + "                Do not mention the word 'user'.\n"
+                + "                Keep this summary between 250 and 300 characters.\n"
+                + "            </userSummary>\n"
+                + "            <claudeSummary>\n"
+                + "                Combine what Claude said and present it as thoughtful advice.\n"
+                + "                Write as if you were summarizing advice you gave to a friend who shared their concerns.\n"
+                + "                Use the ~했어요 form in Korean to convey a friendly tone.\n"
+                + "                Do not mention the word 'Claude'.\n"
+                + "                Keep this summary between 250 and 300 characters.\n"
+                + "            </claudeSummary>\n"
+                + "        </summary>\n"
+                + "        <recommendedActions>\n"
+                + "            <action1>\n"
+                + "                Suggest specific actions the user should take based on the conversation.\n"
+                + "                Each action should be within 50 characters.\n"
+                + "            </action1>\n"
+                + "            <action2>\n"
+                + "                Suggest specific actions the user should take based on the conversation.\n"
+                + "                Each action should be within 50 characters.\n"
+                + "            </action2>\n"
+                + "            <action3>\n"
+                + "                Suggest specific actions the user should take based on the conversation.\n"
+                + "                Each action should be within 50 characters.\n"
+                + "            </action3>\n"
+                + "        </recommendedActions>\n"
+                + "        <letter>\n"
+                + "            Write a letter of up to 176 characters.\n"
+                + "            Check in with the user about whether their concerns have been resolved.\n"
+                + "            If concerns are ongoing, acknowledge this.\n"
+                + "            Ask if there is anything else they want to talk about.\n"
+                + "        </letter>\n"
+                + "    </task>\n";
+
+        // Claude API 호출 및 상담 로그 업데이트
+        return callClaudeAPI(systemPrompt, xmlPrompt, 1024)
+                .flatMap(response -> {
+                    // XML 응답을 파싱
+                    String assistantResponseText = new JSONObject(response)
+                            .getJSONArray("content")
+                            .getJSONObject(0)
+                            .getString("text");
+                    log.info("assistantResponseText : {}", assistantResponseText);
+
+                    return parseXMLResponse(assistantResponseText, counselingLogId);
+                });
+    }
+
+    private Mono<CounselingResponseDto.CounselingDto> parseXMLResponse(String xmlResponse, Long counselingLogId) {
+        try {
+            // XML 파서 초기화
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            InputSource is = new InputSource(new StringReader(xmlResponse));
+            Document doc = builder.parse(is);
+            log.info("doc : {}", doc);
+
+            // XML에서 필드 추출
+//            String conversationAnalysis = doc.getElementsByTagName("task").item(0).getTextContent();
+//            log.info("task : {}", conversationAnalysis);
+            String title = doc.getElementsByTagName("title").item(0).getTextContent();
+            log.info("title : {}", title);
+            String userSummary = doc.getElementsByTagName("userSummary").item(0).getTextContent().replace("\n", " ").trim();
+            log.info("userSummary : {}", userSummary);
+            String assistantSummary = doc.getElementsByTagName("claudeSummary").item(0).getTextContent().replace("\n", " ").trim();
+            log.info("claudeSummary : {}", assistantSummary);
+            List<String> suggestedActions = new ArrayList<>();
+            String action1 = doc.getElementsByTagName("action1").item(0).getTextContent();
+            log.info("action1 : {}", action1);
+            String action2 = doc.getElementsByTagName("action2").item(0).getTextContent();
+            log.info("action2 : {}", action2);
+            String action3 = doc.getElementsByTagName("action3").item(0).getTextContent();
+            log.info("action3 : {}", action3);
+            suggestedActions.add(action1);
+            suggestedActions.add(action2);
+            suggestedActions.add(action3);
+            log.info("suggestedActions : {}", suggestedActions);
+            String letter = doc.getElementsByTagName("letter").item(0).getTextContent().replace("\n", " ").trim();
+            log.info("letter : {}", letter);
+
+            //편지 저장
+            Mail mail = MailConverter.toMailEntity(counselingLogRepository.findById(counselingLogId).get().getUser(), letter, counselingLogRepository.findById(counselingLogId).get().getChatbotType());
+            LocalDateTime randomTime = generateRandomTime();
+            mail.setCreatedAt(randomTime);
+            mailRepository.save(mail);
+
+            // 상담 로그 업데이트
+            CounselingLog existingLog = counselingLogRepository.findById(counselingLogId)
+                    .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
+
+            Calendars calendar = CalendarsConverter.solutionToCalendar(existingLog);
+            calendarsRepository.save(calendar);
+
+            CounselingLog updatedLog = ChatbotConverter.updateCounselingLog(existingLog, title, userSummary, assistantSummary, calendar);
+            counselingLogRepository.save(updatedLog);
+
+            List<String> actions = Arrays.asList(action1, action2, action3);
+            for (String action : actions) {
+                Solution solution = ChatbotConverter.createSolution(updatedLog, action);
+                solutionRepository.save(solution);
+            }
+
+            List<Solution> savedSolutions = solutionRepository.findAllByCounselingLogId(updatedLog.getId());
+
+            // 응답 DTO 생성
+            return Mono.just(ChatbotConverter.toCounselingDto(updatedLog, savedSolutions));
+        } catch (Exception e) {
+            log.error("Error parsing XML response: {}", e.getMessage());
+            return Mono.error(new ErrorHandler(ErrorStatus.COUNSELING_LOG_ERROR));
+        }
+    }
 }
+
+
+
+
