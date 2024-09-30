@@ -457,8 +457,8 @@ public class ClaudeAPIService {
     }
 
     private LocalDateTime generateRandomTime() {
-        long minSeconds = 5 * 60 * 60;  //5시간
-        long maxSeconds = 24 * 60 * 60; //24시간
+        long minSeconds = 1 * 60;  // 1분
+        long maxSeconds = 2 * 60; // 2분
         long randomSeconds = ThreadLocalRandom.current().nextLong(minSeconds, maxSeconds);
         return LocalDateTime.now().plusSeconds(randomSeconds);
     }
