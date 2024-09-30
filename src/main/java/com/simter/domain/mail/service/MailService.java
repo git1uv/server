@@ -30,11 +30,11 @@ public class MailService {
         List<Mail> mails;
 
         if (listType == null || listType.equals("all")) {
-            mails = mailRepository.findByMemberAndIsDeletedFalseAndCreatedAtBefore(member, LocalDateTime.now());
+            mails = mailRepository.findByMemberAndIsDeletedFalseAndCreatedAtBeforeOrderByCreatedAtDesc(member, LocalDateTime.now());
         } else if (listType.equals("starred")) {
-            mails = mailRepository.findByMemberAndIsDeletedFalseAndIsStarredTrueAndCreatedAtBefore(member, LocalDateTime.now());
+            mails = mailRepository.findByMemberAndIsDeletedFalseAndIsStarredTrueAndCreatedAtBeforeOrderByCreatedAtDesc(member, LocalDateTime.now());
         } else if (listType.equals("notRead")) {
-            mails = mailRepository.findByMemberAndIsDeletedFalseAndIsReadFalseAndCreatedAtBefore(member, LocalDateTime.now());
+            mails = mailRepository.findByMemberAndIsDeletedFalseAndIsReadFalseAndCreatedAtBeforeOrderByCreatedAtDesc(member, LocalDateTime.now());
         } else {
             throw new ErrorHandler(ErrorStatus.INVALID_LIST_TYPE);
         }
@@ -50,7 +50,7 @@ public class MailService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<Mail> mails = mailRepository.findByMemberAndIsStarredTrueAndCreatedAtBefore(member, LocalDateTime.now());
+        List<Mail> mails = mailRepository.findByMemberAndIsStarredTrueAndCreatedAtBeforeOrderByCreatedAtDesc(member, LocalDateTime.now());
         return mailConverter.convertToMailGetResponseDto(mails);
     }
 
