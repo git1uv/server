@@ -32,6 +32,11 @@ public class ChatbotMessage {
     @Column(length = 100)
     private String emotion;
 
+    @Column(nullable = false)
+    @Setter
+    private boolean redFlag;
+
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;

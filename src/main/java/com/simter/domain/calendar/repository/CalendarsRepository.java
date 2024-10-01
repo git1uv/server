@@ -22,4 +22,5 @@ public interface CalendarsRepository extends JpaRepository<Calendars, Long> {
     void deleteByUserId(@NotNull Member member);
 
     List<Calendars> findByUserId(@NotNull Member member);
+
 }
