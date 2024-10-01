@@ -40,6 +40,10 @@ public class MemberRequestDto {
 
         @NotNull
         private String loginType;
+
+        @NotNull
+        private JwtTokenDto token;
+
     }
 
     @Builder

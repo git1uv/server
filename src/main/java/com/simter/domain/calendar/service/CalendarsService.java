@@ -49,8 +49,6 @@ public class CalendarsService {
 
         List<CalendarsHomeDayDto> calendarsResponse = new ArrayList<>();
 
-        System.out.println(calendarsList.size());
-
         for (int i = 0; i < calendarsList.size(); i++) {
             Calendars calendar = calendarsList.get(i);
             if (calendar.getDate().getMonthValue() != month % 12 +1) {

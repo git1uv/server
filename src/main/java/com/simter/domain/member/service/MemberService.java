@@ -81,6 +81,7 @@ public class MemberService extends DefaultOAuth2UserService {
         String email = socialRegisterDto.getEmail();
         String nickname = socialRegisterDto.getNickname();
         String loginType = socialRegisterDto.getLoginType();
+        JwtTokenDto token = socialRegisterDto.getToken();
         validateNickname(nickname);
         RegisterDto newRegisterDto = RegisterDto.builder()
             .email(email)
@@ -90,6 +91,7 @@ public class MemberService extends DefaultOAuth2UserService {
             .build();
         Member member = MemberConverter.convertToEntity(newRegisterDto);
         if (!memberRepository.existsByEmail(email)) {
+            member.setRefreshToken(token.getRefreshToken());
             memberRepository.save(member);
         }
     }

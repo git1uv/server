@@ -86,7 +86,33 @@ public class JwtTokenProvider {
     public JwtTokenDto generateSocialToken(String email) {
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
         Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
-        return generateToken(authentication, email);
+        long currentTime = (new Date()).getTime();
+
+        Date accessTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 3));
+        Date refreshTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 24 * 7));
+
+        Claims claims = Jwts.claims().setSubject(authentication.getName());
+        claims.put(AUTHORITIES_KEY, authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+        claims.put("email", email);
+
+        String accessToken = Jwts.builder()
+            .setClaims(claims)
+            .setIssuedAt(new Date(currentTime))
+            .setExpiration(accessTokenExpirationTime)
+            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .compact();
+
+        String refreshToken = Jwts.builder()
+            .setExpiration(refreshTokenExpirationTime)
+            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .compact();
+
+        return JwtTokenDto.builder()
+            .grantType("Bearer")
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build();
     }
 
     public Authentication getAuthentication(String accessToken) {
