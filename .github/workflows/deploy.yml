@@ -1,4 +1,4 @@
-jobs:name: Java CI/CD with Gradle
+name: Java CI/CD with Gradle
 
 on:
   push:
@@ -29,23 +29,23 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew clean build --exclude-task test --warning-mode all
 
-  # 빌드 후 EC2에서 백그라운드로 Java 애플리케이션 실행
   deploy-to-ec2:
     needs: build
     runs-on: self-hosted
 
-
     steps:
       - name: Upload built application to EC2
         run: |
-          scp -i simter.pem "/Users/sujin/Documents/예소/simter/build/libs/simter-0.0.1-SNAPSHOT.jar" ubuntu@${{ secrets.EC2_IP }}:/home/ubuntu
+          scp -i simter.pem "/Users/sujin/Documents/khusimter/simter/build/libs/simter-0.0.1-SNAPSHOT.jar" ubuntu@${{ secrets.EC2_IP }}:/home/ubuntu
 
       - name: Stop existing application
         run: |
           ssh -i "simter.pem" ubuntu@${{ secrets.EC2_IP }} "pkill -f 'java -jar /home/ubuntu/simter-0.0.1-SNAPSHOT.jar' || true"
+
       - name: env
         run: |
           export $(cat .env | xargs)
+
       - name: Start new application in the background without specifying a port
         run: |
           ssh -i "simter.pem" ubuntu@${{ secrets.EC2_IP }} "nohup java -jar /home/ubuntu/simter-0.0.1-SNAPSHOT.jar > log.txt 2>&1 &"
