@@ -75,8 +75,8 @@ public class MemberController {
     @GetMapping("/api/v1/reissue")
     public ApiResponse<JwtTokenDto> reissue(HttpServletRequest request) {
         JwtTokenDto token = jwtTokenProvider.resolveToken(request);
-        String refreshToken = token.getRefreshToken();
-        JwtTokenDto newToken = jwtTokenProvider.reissueToken(refreshToken);
+        String email = jwtTokenProvider.getEmail(token.getRefreshToken());
+        JwtTokenDto newToken = jwtTokenProvider.reissueToken(email);
         return ApiResponse.onSuccess(newToken);
     }
 

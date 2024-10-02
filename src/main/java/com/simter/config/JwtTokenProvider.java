@@ -67,6 +67,7 @@ public class JwtTokenProvider {
             .compact();
 
         String refreshToken = Jwts.builder()
+            .setClaims(claims)
             .setExpiration(refreshTokenExpirationTime)
             .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact();
@@ -134,8 +135,8 @@ public class JwtTokenProvider {
     }
 
     //액세스 토큰과 리프레시 토큰 함께 재발행
-    public JwtTokenDto reissueToken(String oldRefreshToken) {
-        Member member = memberRepository.findByRefreshToken(oldRefreshToken)
+    public JwtTokenDto reissueToken(String email) {
+        Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.JWT_TOKEN_NOT_FOUND));
 
         Authentication authentication = getAuthentication(oldRefreshToken);
