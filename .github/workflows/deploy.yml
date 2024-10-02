@@ -34,7 +34,7 @@ jobs:
       - name: docker login
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: cowboysj
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
 
@@ -60,7 +60,7 @@ jobs:
             CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }} \
             SERVER_URL=${{ secrets.SERVER_URL }} \
             JAVA_HOME=/usr/local/openjdk-21 \
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest
+          tags: cowboysj/simter:latest
 
   # push 한 이미지를 ec2에서 pull 받아서 실행
   run-docker-image-on-ec2:
@@ -69,7 +69,7 @@ jobs:
 
     steps:
       - name: docker pull
-        run : sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest
+        run : sudo docker pull cowboysj/simter:latest
 
       - name: docker stop container
         run: |
@@ -93,7 +93,7 @@ jobs:
           -e CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }} \
           -e SERVER_URL=${{ secrets.SERVER_URL }} \
           -e JAVA_HOME=/usr/local/openjdk-21 \
-          ${{ secrets.DOCKERHUB_USERNAME }}/simter:latest
+          cowboysj/simter:latest
 
       - name: delete old docker image
         run: sudo docker system prune -f
