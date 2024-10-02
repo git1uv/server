@@ -137,13 +137,26 @@ public class MemberService extends DefaultOAuth2UserService {
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
         mimeMessageHelper.setTo(email);
         mimeMessageHelper.setSubject("[심터] 비밀번호 재설정 메일입니다.");
-        mimeMessageHelper.setText("새 비밀번호: " + newPassword, true);
+
+        String htmlMsg = "<div style='font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9;'>" +
+            "  <h2 style='color: #333;'>비밀번호 재설정 안내</h2>" +
+            "  <p style='font-size: 16px;'>안녕하세요, " + member.getNickname() + "님!</p>" +
+            "  <p style='font-size: 16px;'>임시 비밀번호입니다.</p>" +
+            "  <div style='margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; border: 1px solid #ddd; display: inline-block;'>" +
+            "    <p style='font-size: 18px; color: #555;'>새 비밀번호: <strong style='font-size: 20px; color: #000;'>" + newPassword + "</strong></p>" +
+            "  </div>" +
+            "  <p style='font-size: 14px; color: #777;'>로그인 후 비밀번호를 변경하시기 바랍니다.</p>" +
+            "  <footer style='margin-top: 30px; font-size: 12px; color: #999;'>문의사항은 <a href='mailto:support@shimter.com'>a64494293@gmail.com</a>으로 연락 주세요.</footer>" +
+            "</div>";
+
+        mimeMessageHelper.setText(htmlMsg, true);
         mailSender.send(mimeMessage);
 
         String encryptedPassword = encoder.encode(newPassword);
         member.setPassword(encryptedPassword);
         memberRepository.save(member);
     }
+
 
     //메인화면 api
     public MainDto main(String email) {
