@@ -25,6 +25,7 @@ public class ChatbotConverter {
                 .counselingLog(counselingLogId)
                 .sender("USER")
                 .content(request.getUserMessage())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
