@@ -64,23 +64,11 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
 
 
     @org.springframework.web.bind.annotation.ExceptionHandler
-    public ResponseEntity<Object> exception(Exception e, WebRequest request) {
-        e.printStackTrace();
-        log.error("exception");
-
-        return handleExceptionInternalFalse(e, ErrorStatus._INTERNAL_SERVER_ERROR,
-                HttpHeaders.EMPTY,
-                ErrorStatus._INTERNAL_SERVER_ERROR.getHttpStatus(), request, e.getMessage());
-    }
-
-    @org.springframework.web.bind.annotation.ExceptionHandler(ErrorHandler.class)
-    public ResponseEntity<Object> handleJwtException(ErrorHandler e, WebRequest request) {
-        // JWT 관련 에러에 대해 401로 응답
+    public ResponseEntity<Object> exception(ErrorHandler e, WebRequest request) {
         if (e.getErrorStatus() == ErrorStatus.JWT_UNSUPPORTED_TOKEN) {
             return new ResponseEntity<>("만료된 토큰입니다.", HttpStatus.UNAUTHORIZED);
         }
 
-        // 그 외 에러는 기존 처리 방식 유지
         return handleExceptionInternalFalse(e, ErrorStatus._INTERNAL_SERVER_ERROR,
             HttpHeaders.EMPTY, ErrorStatus._INTERNAL_SERVER_ERROR.getHttpStatus(), request, e.getMessage());
     }
