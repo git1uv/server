@@ -77,23 +77,8 @@ jobs:
 
 
       - name: docker run new container
-        run: sudo docker run -d -p 8080:8080 --name simter-container \
-          -e DB_URL=${{ secrets.DB_URL }} \
-          -e DB_USER=${{ secrets.DB_USER }} \
-          -e DB_PW=${{ secrets.DB_PW }} \
-          -e DB_ROOTPW=${{ secrets.DB_ROOTPW }} \
-          -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-          -e OAUTH_ID=${{ secrets.OAUTH_ID }} \
-          -e OAUTH_PW=${{ secrets.OAUTH_PW }} \
-          -e KAKAO_ID=${{ secrets.KAKAO_ID }} \
-          -e KAKAO_URI=${{ secrets.KAKAO_URI }} \
-          -e KAKAO_SECRET=${{ secrets.KAKAO_SECRET }} \
-          -e MAIL_NAME=${{ secrets.MAIL_NAME }} \
-          -e MAIL_PW=${{ secrets.MAIL_PW }} \
-          -e CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }} \
-          -e SERVER_URL=${{ secrets.SERVER_URL }} \
-          -e JAVA_HOME=/usr/local/openjdk-21 \
-          cowboysj/simter:latest
+        run: sudo docker run -d -p 8080:8080 --name simter-container -e DB_URL=*** -e DB_USER=*** -e DB_PW=*** -e DB_ROOTPW=*** -e JWT_SECRET=*** -e OAUTH_ID=*** -e OAUTH_PW=*** -e KAKAO_ID=*** -e KAKAO_URI=*** -e KAKAO_SECRET=*** -e MAIL_NAME=*** -e MAIL_PW=*** -e CLAUDE_API_KEY=*** -e SERVER_URL=*** -e JAVA_HOME=/usr/local/openjdk-21 cowboysj/simter:latest
+
 
       - name: delete old docker image
         run: sudo docker system prune -f
