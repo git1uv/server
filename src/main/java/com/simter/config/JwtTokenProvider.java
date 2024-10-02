@@ -50,8 +50,7 @@ public class JwtTokenProvider {
 
         long currentTime = (new Date()).getTime();
 
-        //Date accessTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 3));
-        Date accessTokenExpirationTime = new Date(currentTime + (1000 * 30));
+        Date accessTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 24 * 7));
         Date refreshTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 24 * 7));
 
         Claims claims = Jwts.claims().setSubject(authentication.getName());
@@ -90,7 +89,7 @@ public class JwtTokenProvider {
         Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
         long currentTime = (new Date()).getTime();
 
-        Date accessTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 3));
+        Date accessTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 24 * 7));
         Date refreshTokenExpirationTime = new Date(currentTime + (1000 * 60 * 60 * 24 * 7));
 
         Claims claims = Jwts.claims().setSubject(authentication.getName());
