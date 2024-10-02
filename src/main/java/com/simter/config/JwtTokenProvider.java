@@ -139,7 +139,7 @@ public class JwtTokenProvider {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.JWT_TOKEN_NOT_FOUND));
 
-        Authentication authentication = getAuthentication(oldRefreshToken);
+        Authentication authentication = getAuthentication(email);
 
         return generateToken(authentication, member.getEmail());
     }
