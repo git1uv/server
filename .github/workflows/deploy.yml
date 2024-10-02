@@ -1,4 +1,4 @@
-name: Java CI/CD with Gradle
+jobs:name: Java CI/CD with Gradle
 
 on:
   push:
@@ -34,17 +34,18 @@ jobs:
     needs: build
     runs-on: self-hosted
 
+
     steps:
       - name: Upload built application to EC2
         run: |
-          scp -i simter.pem "Users/sujin/Documents/예소/simter/build/libs/simter-0.0.1-SNAPSHOT.jar" ubuntu@3.37.213.59:/home/ubuntu
+          scp -i simter.pem "/Users/sujin/Documents/예소/simter/build/libs/simter-0.0.1-SNAPSHOT.jar" ubuntu@${{ secrets.EC2_IP }}:/home/ubuntu
 
       - name: Stop existing application
         run: |
-          ssh -i "simter.pem" ubuntu@3.37.213.59 "pkill -f 'java -jar /home/ubuntu/simter-0.0.1-SNAPSHOT.jar' || true"
+          ssh -i "simter.pem" ubuntu@${{ secrets.EC2_IP }} "pkill -f 'java -jar /home/ubuntu/simter-0.0.1-SNAPSHOT.jar' || true"
       - name: env
         run: |
           export $(cat .env | xargs)
       - name: Start new application in the background without specifying a port
         run: |
-          ssh -i "simter.pem" ubuntu@3.37.213.59 "nohup java -jar /home/ubuntu/simter-0.0.1-SNAPSHOT.jar > log.txt 2>&1 &"
+          ssh -i "simter.pem" ubuntu@${{ secrets.EC2_IP }} "nohup java -jar /home/ubuntu/simter-0.0.1-SNAPSHOT.jar > log.txt 2>&1 &"
