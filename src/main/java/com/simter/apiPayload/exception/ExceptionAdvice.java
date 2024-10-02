@@ -64,16 +64,14 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
 
 
     @org.springframework.web.bind.annotation.ExceptionHandler
-    public ResponseEntity<Object> exception(ErrorHandler e, WebRequest request) {
-        if (e.getErrorStatus() == ErrorStatus.JWT_UNSUPPORTED_TOKEN) {
-            return handleExceptionInternalFalse(e, ErrorStatus.JWT_UNSUPPORTED_TOKEN,
-                HttpHeaders.EMPTY, ErrorStatus.JWT_UNSUPPORTED_TOKEN.getHttpStatus(), request, e.getMessage());
-        }
+    public ResponseEntity<Object> exception(Exception e, WebRequest request) {
+        e.printStackTrace();
+        log.error("exception");
 
         return handleExceptionInternalFalse(e, ErrorStatus._INTERNAL_SERVER_ERROR,
-            HttpHeaders.EMPTY, ErrorStatus._INTERNAL_SERVER_ERROR.getHttpStatus(), request, e.getMessage());
+                HttpHeaders.EMPTY,
+                ErrorStatus._INTERNAL_SERVER_ERROR.getHttpStatus(), request, e.getMessage());
     }
-
 
     @ExceptionHandler(value = GeneralException.class)
     public ResponseEntity onThrowException(GeneralException generalException,
