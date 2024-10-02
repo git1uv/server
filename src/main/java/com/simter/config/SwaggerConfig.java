@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @OpenAPIDefinition(
-        info = @Info(title="SIMTER API",
+        info = @Info(title="Simter API",
         description = "예소 깃러브",
         version = "v1")
 )
