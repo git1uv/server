@@ -27,8 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         JwtTokenDto jwtTokenDto = jwtTokenProvider.resolveToken(request);
         if (token != null && token.startsWith("Bearer ")) {
             if (!jwtTokenProvider.validateToken(jwtTokenDto.getAccessToken())) {
-                response.sendError(401, "만료되었습니다.");
-                throw new ErrorHandler(ErrorStatus.JWT_UNSUPPORTED_TOKEN);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "만료된 토큰입니다.");
+                return;
             }
             Authentication authentication = jwtTokenProvider.getAuthentication(jwtTokenDto.getAccessToken());
             SecurityContextHolder.getContext().setAuthentication(authentication);

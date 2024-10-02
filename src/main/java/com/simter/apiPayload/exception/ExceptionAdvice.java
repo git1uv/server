@@ -3,6 +3,7 @@ package com.simter.apiPayload.exception;
 import com.simter.apiPayload.ApiResponse;
 import com.simter.apiPayload.code.ReasonDTO;
 import com.simter.apiPayload.code.status.ErrorStatus;
+import com.simter.apiPayload.exception.handler.ErrorHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -66,6 +67,7 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> exception(Exception e, WebRequest request) {
         e.printStackTrace();
         log.error("exception");
+
         return handleExceptionInternalFalse(e, ErrorStatus._INTERNAL_SERVER_ERROR,
                 HttpHeaders.EMPTY,
                 ErrorStatus._INTERNAL_SERVER_ERROR.getHttpStatus(), request, e.getMessage());
