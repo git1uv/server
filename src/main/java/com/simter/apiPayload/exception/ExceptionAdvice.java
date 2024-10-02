@@ -66,7 +66,8 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler
     public ResponseEntity<Object> exception(ErrorHandler e, WebRequest request) {
         if (e.getErrorStatus() == ErrorStatus.JWT_UNSUPPORTED_TOKEN) {
-            return new ResponseEntity<>("만료된 토큰입니다.", HttpStatus.UNAUTHORIZED);
+            return handleExceptionInternalFalse(e, ErrorStatus.JWT_UNSUPPORTED_TOKEN,
+                HttpHeaders.EMPTY, ErrorStatus.JWT_UNSUPPORTED_TOKEN.getHttpStatus(), request, e.getMessage());
         }
 
         return handleExceptionInternalFalse(e, ErrorStatus._INTERNAL_SERVER_ERROR,
