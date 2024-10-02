@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Upload built application to EC2
         run: |
-          scp -i simter.pem ~/Documents/예소/simter/build/libs/simter-0.0.1-SNAPSHOT.jar ubuntu@3.37.213.59:/home/ubuntu
+          scp -i simter.pem "Users/sujin/Documents/예소/simter/build/libs/simter-0.0.1-SNAPSHOT.jar" ubuntu@3.37.213.59:/home/ubuntu
 
       - name: Stop existing application
         run: |
