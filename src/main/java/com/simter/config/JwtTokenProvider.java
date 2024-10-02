@@ -133,19 +133,13 @@ public class JwtTokenProvider {
     }
 
     //액세스 토큰과 리프레시 토큰 함께 재발행
-    public JwtTokenDto reissueToken(String email, String refreshToken) {
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+    public JwtTokenDto reissueToken(String oldRefreshToken) {
+        Member member = memberRepository.findByRefreshToken(oldRefreshToken)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.JWT_TOKEN_NOT_FOUND));
 
-        String storedRefreshToken = member.getRefreshToken();
+        Authentication authentication = getAuthentication(oldRefreshToken);
 
-        if (!storedRefreshToken.equals(refreshToken)) {
-            throw new ErrorHandler(ErrorStatus.JWT_TOKEN_NOT_FOUND);
-        }
-
-        Authentication authentication = getAuthentication(storedRefreshToken);
-
-        return generateToken(authentication, email);
+        return generateToken(authentication, member.getEmail());
     }
 
     public JwtTokenDto resolveToken(HttpServletRequest request) {
