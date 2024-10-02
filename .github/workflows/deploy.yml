@@ -73,10 +73,8 @@ jobs:
 
       - name: docker stop container
         run: |
-          if [ $(sudo docker ps -a -q -f name=simter-container) ]; then
-            sudo docker stop simter-container
-            sudo docker rm simter-container
-          fi
+          sudo docker ps -a -q -f name=simter-container | grep -q . && sudo docker stop simter-container && sudo docker rm simter-container || echo "Container does not exist"
+
 
       - name: docker run new container
         run: sudo docker run -d -p 8080:8080 --name simter-container \
