@@ -304,6 +304,7 @@ public class ClaudeAPIService {
                         + "저번에 같이 이야기했던 초콜릿은 맛있었나요? 더 이야기해보고 싶어요! 언제든지 기다리고 있을게요. 고민이나 하고 싶은 이야기가 있다면 저를 찾아와주세요!\n"
                         + "</letter>\n"
                         + "</task>"
+                        +"</example>\n"
                 + "</conversationAnalysis>\n";
 
         String systemPrompt = "answer format is following xml format.Don't forget print task tag "
