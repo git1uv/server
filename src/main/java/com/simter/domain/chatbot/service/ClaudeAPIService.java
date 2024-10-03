@@ -71,12 +71,27 @@ public class ClaudeAPIService {
         requestBody.put("model", "claude-3-5-sonnet-20240620");
         requestBody.put("max_tokens", maxTokens);
 
+        // 시스템 메시지를 위한 맵 생성
+        Map<String, Object> systemMessage = new HashMap<>();
+        systemMessage.put("type", "text");
+        systemMessage.put("text", systemPrompt);
+
+        // 캐시 제어 추가
+        Map<String, String> cacheControl = new HashMap<>();
+        cacheControl.put("type", "ephemeral");
+        systemMessage.put("cache_control", cacheControl);
+
+        // 시스템 메시지를 리스트로 만들어 추가
+        List<Map<String, Object>> systemMessages = new ArrayList<>();
+        systemMessages.add(systemMessage);
+        requestBody.put("system", systemMessages);
+
+        // 사용자 메시지 구성
         Map<String, Object> userMessageContent = new HashMap<>();
         userMessageContent.put("role", "user");
         userMessageContent.put("content", conversationContext);
 
         requestBody.put("messages", new Object[]{userMessageContent});
-        requestBody.put("system", systemPrompt);
 
         // Claude API 호출
         return webClient.post()
@@ -84,6 +99,7 @@ public class ClaudeAPIService {
                 .header("x-api-key", API_KEY)
                 .header("anthropic-version", "2023-06-01")
                 .header("Content-Type", "application/json")
+                .header("anthropic-beta", "prompt-caching-2024-07-31")
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(String.class);
