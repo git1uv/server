@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -99,6 +100,7 @@ public class ChatbotController {
 
     @Operation(summary = "챗봇 의견 보내기", description = "챗봇 상담이 끝나고 사용자가 의견을 보내는 API")
     @PostMapping("/opinion")
+    @Transactional
     public ApiResponse<Void> postOpinion(HttpServletRequest request,
         @RequestBody OpinionRequestDto opinionRequestDto) {
         JwtTokenDto token = jwtTokenProvider.resolveToken(request);

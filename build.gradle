@@ -38,6 +38,7 @@ dependencies {
 	implementation 'org.apache.commons:commons-lang3:3.12.0'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.jetbrains:annotations:24.0.1'
+	implementation 'org.json:json:20230227'
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-json'
