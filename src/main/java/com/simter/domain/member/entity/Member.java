@@ -36,8 +36,7 @@ public class Member implements UserDetails {
     @Builder.Default
     private boolean hasAirplane = false;
 
-    @Column(length = 50)
-    @ColumnDefault("H")
+    @Column(columnDefinition = "varchar(50) default 'H'")
     private String chatbot;
 
     @Column(length = 50)
