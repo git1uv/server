@@ -91,10 +91,10 @@ public class ChatbotController {
     }
 
     @Operation(summary = "상담 일지 조회", description = "상담 일지 조회 API")
-    @GetMapping("/counselinglog/{counselinglogId}")
+    @GetMapping("/counselinglog/{counselingLogId}")
     public ApiResponse<CounselingResponseDto.CounselingDto> getCounselingLog(
-            @PathVariable Long counselinglogId) {
-        CounselingResponseDto.CounselingDto response = chatbotService.getCounselingLog(counselinglogId);
+            @PathVariable Long counselingLogId) {
+        CounselingResponseDto.CounselingDto response = chatbotService.getCounselingLog(counselingLogId);
         return ApiResponse.onSuccessCustom(SuccessStatus.COUNSELING_LIST, response);
     }
 
