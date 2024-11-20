@@ -4,6 +4,7 @@ import com.simter.apiPayload.ApiResponse;
 import com.simter.apiPayload.code.status.SuccessStatus;
 import com.simter.config.JwtTokenProvider;
 import com.simter.domain.chatbot.dto.ChatbotRequestDto.DefaultChatbotRequestDto;
+import com.simter.domain.chatbot.dto.ChatbotRequestDto.OpinionRequestDto;
 import com.simter.domain.chatbot.dto.ChatbotRequestDto.SelectChatbotRequestDto;
 import com.simter.domain.chatbot.dto.ChatbotResponseDto.GetChatbotTypeResponseDto;
 import com.simter.domain.chatbot.dto.ChatbotResponseDto.SelectChatbotResponseDto;
@@ -96,7 +97,15 @@ public class ChatbotController {
         return ApiResponse.onSuccessCustom(SuccessStatus.COUNSELING_LIST, response);
     }
 
-
+    @Operation(summary = "챗봇 의견 보내기", description = "챗봇 상담이 끝나고 사용자가 의견을 보내는 API")
+    @PostMapping("/opinion")
+    public ApiResponse<Void> postOpinion(HttpServletRequest request,
+        @RequestBody OpinionRequestDto opinionRequestDto) {
+        JwtTokenDto token = jwtTokenProvider.resolveToken(request);
+        String email = jwtTokenProvider.getEmail(token.getAccessToken());
+        chatbotService.postOpinion(email, opinionRequestDto);
+        return ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_OPINION, null);
+    }
 
 
 }

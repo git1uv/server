@@ -33,7 +33,8 @@ public enum SuccessStatus implements BaseCode {
     DEFAULT_CHATBOT("200","사용자의 기본 챗봇 타입 조회에 성공하였습니다."),
     CHATBOT_SESSION_END("200","챗봇 세션 종료에 성공하였습니다."),
     CHATBOT_CHATTING("200","챗봇 응답 생성에 성공하였습니다."),
-    COUNSELING_LIST("200","상담일지 조회에 성공하였습니다.");
+    COUNSELING_LIST("200","상담일지 조회에 성공하였습니다."),
+    CHATBOT_OPINION("200", "챗봇 상담 의견 보내기에 성공하였습니다.");
 
 
 

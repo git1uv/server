@@ -3,13 +3,16 @@ package com.simter.domain.chatbot.service;
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.domain.chatbot.converter.ChatbotConverter;
+import com.simter.domain.chatbot.dto.ChatbotRequestDto.OpinionRequestDto;
 import com.simter.domain.chatbot.dto.ChatbotResponseDto;
 import com.simter.domain.chatbot.dto.ChatbotResponseDto.GetChatbotTypeResponseDto;
 import com.simter.domain.chatbot.dto.ChatbotResponseDto.SelectChatbotResponseDto;
 import com.simter.domain.chatbot.dto.CounselingResponseDto;
 import com.simter.domain.chatbot.entity.CounselingLog;
+import com.simter.domain.chatbot.entity.Opinion;
 import com.simter.domain.chatbot.entity.Solution;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
+import com.simter.domain.chatbot.repository.OpinionRepository;
 import com.simter.domain.chatbot.repository.SolutionRepository;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
@@ -27,6 +30,7 @@ public class ChatbotService {
    private final MemberRepository memberRepository;
    private final CounselingLogRepository counselingLogRepository;
    private final SolutionRepository solutionRepository;
+   private final OpinionRepository opinionRepository;
 
     //사용자의 default 챗봇 변경
     @Transactional
@@ -66,8 +70,24 @@ public class ChatbotService {
         CounselingLog counselingLog = counselingLogRepository.findById(counselingLogId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.COUNSELING_LOG_NOT_FOUND));
         List<Solution> solution = solutionRepository.findAllByCounselingLogId(counselingLog.getId());
-        return ChatbotConverter.toCounselingDto(counselingLog,solution);
+        return ChatbotConverter.toCounselingDto(counselingLog, solution);
     }
 
+    //챗봇 상담 이후 의견을 저장
+    public void postOpinion(String email, OpinionRequestDto opinionRequestDto) {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
+        CounselingLog counselingLog = counselingLogRepository.findById(opinionRequestDto.getCounselingLogId())
+            .orElseThrow(() -> new ErrorHandler(ErrorStatus.COUNSELING_LOG_NOT_FOUND));
+
+        Opinion opinion = Opinion.builder()
+            .counselingLog(counselingLog)
+            .content(opinionRequestDto.getContent())
+            .createdAt(LocalDateTime.now())
+            .member(member)
+            .build();
+
+        opinionRepository.save(opinion);
+    }
 }

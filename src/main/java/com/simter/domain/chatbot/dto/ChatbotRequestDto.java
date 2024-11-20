@@ -22,4 +22,13 @@ public class ChatbotRequestDto {
     public static class SelectChatbotRequestDto {
         String chatbotType;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OpinionRequestDto {
+        String content;
+        Long counselingLogId;
+    }
 }
