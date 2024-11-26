@@ -172,7 +172,6 @@ public class ClaudeAPIService {
                 + "</example>"
                 + "</systemPrompt>";
 
-        // 전체 XML 구조 통합
         String xmlPrompt = "<conversationAnalysis>\n"
                 + systemPrompt
                 + "</conversationAnalysis>\n";
@@ -184,10 +183,11 @@ public class ClaudeAPIService {
 
     private Mono<ClaudeResponseDto> parseXMLChatResponse(String xmlResponse, CounselingLog counselingLog, ClaudeRequestDto request) {
         try {
+            String cleanedResponse = cleanXmlString(xmlResponse);
             // XML 파서 초기화
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            String assistantResponseText = new JSONObject(xmlResponse)
+            String assistantResponseText = new JSONObject(cleanedResponse)
                     .getJSONArray("content")
                     .getJSONObject(0)
                     .getString("text");
@@ -487,6 +487,10 @@ public class ClaudeAPIService {
         long maxSeconds = 2 * 60; // 2분
         long randomSeconds = ThreadLocalRandom.current().nextLong(minSeconds, maxSeconds);
         return LocalDateTime.now().plusSeconds(randomSeconds);
+    }
+
+    private String cleanXmlString(String xml) {
+        return xml.trim().replaceFirst("^([\\W&&[^<]]+)<", "<");
     }
 }
 
