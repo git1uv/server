@@ -1,9 +1,14 @@
 package com.simter.config;
 
+import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.service.OAuth2UserService;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,6 +25,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -30,6 +36,7 @@ public class WebSecurityConfig {
     private final OAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final UserDetailsService userDetailsService;
+    private final RedisTemplate redisTemplate;
 
     @Bean
     public BCryptPasswordEncoder encoder() {
@@ -63,7 +70,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, RedisTemplate redisTemplate) throws Exception {
 
         return http
             .csrf(AbstractHttpConfigurer::disable)
@@ -74,7 +81,7 @@ public class WebSecurityConfig {
             .authorizeHttpRequests(requests -> requests
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                 .requestMatchers("/api/v1/*").permitAll()
-                .requestMatchers("/", "/api/v1/login/general", "/api/v1/register/general").permitAll()
+                .requestMatchers("/", "/api/v1/login/general", "/api/v1/register/general", "/api/v1/logout").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -86,13 +93,8 @@ public class WebSecurityConfig {
                 .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
                     .successHandler(oAuth2SuccessHandler)
             )
-            .logout(LogoutConfigurer::permitAll)
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
                 UsernamePasswordAuthenticationFilter.class)
-            .logout(logout -> logout
-                .logoutUrl("/api/v1/logout")
-                .permitAll()
-            )
             .build();
     }
 }

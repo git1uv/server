@@ -16,8 +16,10 @@ import com.simter.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -69,8 +71,9 @@ public class MemberController {
     @Operation(summary = "로그아웃 API", description = "리프레시토큰을 파괴하는 API")
     @DeleteMapping("/logout")
     public ApiResponse<Void> logout(HttpServletRequest request) {
-        String token = jwtTokenProvider.resolveToken(request).getAccessToken();
-        memberService.logout(token);
+        JwtTokenDto token = jwtTokenProvider.resolveToken(request);
+        String email = jwtTokenProvider.getEmail(token.getRefreshToken());
+        memberService.logout(token, email);
         return ApiResponse.onSuccess(null);
     }
 
@@ -79,7 +82,7 @@ public class MemberController {
     public ApiResponse<JwtTokenDto> reissue(HttpServletRequest request) {
         JwtTokenDto token = jwtTokenProvider.resolveToken(request);
         String email = jwtTokenProvider.getEmail(token.getRefreshToken());
-        JwtTokenDto newToken = jwtTokenProvider.reissueToken(email);
+        JwtTokenDto newToken = jwtTokenProvider.reissueToken(email, token.getAccessToken());
         return ApiResponse.onSuccess(newToken);
     }
 

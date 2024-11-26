@@ -56,9 +56,6 @@ public class Member implements UserDetails {
     @Column(nullable = true)
     private LocalDateTime inactiveDate;
 
-    @Column(nullable = true)
-    private String refreshToken;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
@@ -99,10 +96,6 @@ public class Member implements UserDetails {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
     }
 
     public void setPassword(String password) {

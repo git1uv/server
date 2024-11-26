@@ -3,6 +3,8 @@ package com.simter.domain.member.service;
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.config.JwtTokenProvider;
+import com.simter.config.TokenRedis;
+import com.simter.config.TokenRedisRepository;
 import com.simter.domain.member.converter.MemberConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.dto.MainDto;
@@ -19,8 +21,10 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,6 +43,8 @@ public class MemberService extends DefaultOAuth2UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender mailSender;
+    private final TokenRedisRepository tokenRedisRepository;
+    private final RedisTemplate redisTemplate;
 
     //회원가입
     public void register(RegisterDto registerRequestDto) {
@@ -76,7 +82,6 @@ public class MemberService extends DefaultOAuth2UserService {
             .build();
         Member member = MemberConverter.convertToEntity(newRegisterDto);
         if (!memberRepository.existsByEmail(email)) {
-            member.setRefreshToken(token.getRefreshToken());
             memberRepository.save(member);
         } else {
             Member orgMember = memberRepository.findByEmail(email).orElseThrow();
@@ -111,21 +116,22 @@ public class MemberService extends DefaultOAuth2UserService {
             Authentication authentication
                 = authenticationManager.authenticate(token);
             JwtTokenDto jwtToken = jwtTokenProvider.generateToken(authentication, email);
-
+            tokenRedisRepository.save(
+                new TokenRedis(email, jwtToken.getAccessToken(), jwtToken.getRefreshToken()));
             return LoginResponseDto.builder()
                 .token(jwtToken)
                 .build();
         }
 
     }
-
     //로그아웃
-    public void logout(String token) {
-        String email = jwtTokenProvider.getEmail(token);
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        member.setRefreshToken(null);
-        memberRepository.save(member);
+    public void logout(JwtTokenDto token, String email) {
+        String accessToken = token.getAccessToken();
+        Long expirationTime = jwtTokenProvider.getRemainingExpirationTime(accessToken);
+        if (expirationTime != null && expirationTime > 0) {
+            redisTemplate.opsForValue().set(accessToken, "logout", expirationTime, TimeUnit.MILLISECONDS);
+            redisTemplate.delete("token:" + email);
+        }
     }
 
     //비밀번호 재발송

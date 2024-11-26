@@ -39,6 +39,7 @@ public class OAuthController {
             .email(email)
             .isMember(memberRepository.existsByEmail(email))
             .build();
+
         return ApiResponse.onSuccess(response);
 
     }
