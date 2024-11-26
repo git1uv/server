@@ -3,9 +3,7 @@ name: Java CI/CD with Gradle
 
 on:
   push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
+    branches: [ "cicd/#98" ]
 
 jobs:
   build:
@@ -63,20 +61,47 @@ jobs:
             JAVA_HOME=/usr/local/openjdk-21 \
           tags: cowboysj/simter:latest
 
-  # push 한 이미지를 ec2에서 pull 받아서 실행
-  run-docker-image-on-ec2:
-    needs: build
-    runs-on: self-hosted
+  deploy-to-ec2:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: docker pull
-        run : sudo docker pull cowboysj/simter:latest
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: docker stop container
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Pull and run Docker on EC2
         run: |
-          sudo docker ps -a -q -f name=simter-container | grep -q . && sudo docker stop simter-container && sudo docker rm simter-container || echo "Container does not exist"
-      - name: docker run new container
-        run: sudo docker run -d -p 8080:8080 --name simter-container -e DB_URL=${{ secrets.DB_URL }} -e DB_USER=${{ secrets.DB_USER }} -e DB_PW=${{ secrets.DB_PW }} -e DB_ROOTPW=${{ secrets.DB_ROOTPW }} -e JWT_SECRET=${{ secrets.JWT_SECRET }} -e OAUTH_ID=${{ secrets.OAUTH_ID }} -e OAUTH_PW=${{ secrets.OAUTH_PW }} -e KAKAO_ID=${{ secrets.KAKAO_ID }} -e KAKAO_URI=${{ secrets.KAKAO_URI }} -e KAKAO_SECRET=${{ secrets.KAKAO_SECRET }} -e MAIL_NAME=${{ secrets.MAIL_NAME }} -e MAIL_PW=${{ secrets.MAIL_PW }} -e CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }} -e SERVER_URL=${{ secrets.SERVER_URL }} -e JAVA_HOME=/usr/local/openjdk-21 cowboysj/simter:latest
-
-      - name: delete old docker image
-        run: sudo docker system prune -f
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+            sudo docker pull cowboysj/simter:latest
+          
+            if sudo docker ps -a -q -f name=simter-container | grep -q .; then
+              sudo docker stop simter-container
+              sudo docker rm simter-container
+            fi
+          
+            sudo docker run -d \
+              -p 8080:8080 \
+              --name simter-container \
+              -e DB_URL=${{ secrets.DB_URL }} \
+              -e DB_USER=${{ secrets.DB_USER }} \
+              -e DB_PW=${{ secrets.DB_PW }} \
+              -e DB_ROOTPW=${{ secrets.DB_ROOTPW }} \
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e OAUTH_ID=${{ secrets.OAUTH_ID }} \
+              -e OAUTH_PW=${{ secrets.OAUTH_PW }} \
+              -e KAKAO_ID=${{ secrets.KAKAO_ID }} \
+              -e KAKAO_URI=${{ secrets.KAKAO_URI }} \
+              -e KAKAO_SECRET=${{ secrets.KAKAO_SECRET }} \
+              -e MAIL_NAME=${{ secrets.MAIL_NAME }} \
+              -e MAIL_PW=${{ secrets.MAIL_PW }} \
+              -e CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }} \
+              -e SERVER_URL=${{ secrets.SERVER_URL }} \
+              -e JAVA_HOME=/usr/local/openjdk-21 \
+              cowboysj/simter:latest
+          
+            sudo docker system prune -f
+          EOF
