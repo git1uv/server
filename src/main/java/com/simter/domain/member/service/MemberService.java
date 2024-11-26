@@ -3,14 +3,6 @@ package com.simter.domain.member.service;
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.config.JwtTokenProvider;
-import com.simter.domain.airplane.repository.AirplaneRepository;
-import com.simter.domain.calendar.entity.Calendars;
-import com.simter.domain.calendar.repository.CalendarsRepository;
-import com.simter.domain.chatbot.entity.CounselingLog;
-import com.simter.domain.chatbot.repository.ChatbotRepository;
-import com.simter.domain.chatbot.repository.CounselingLogRepository;
-import com.simter.domain.chatbot.repository.SolutionRepository;
-import com.simter.domain.mail.repository.MailRepository;
 import com.simter.domain.member.converter.MemberConverter;
 import com.simter.domain.member.dto.JwtTokenDto;
 import com.simter.domain.member.dto.MainDto;
@@ -24,11 +16,9 @@ import com.simter.domain.member.repository.MemberRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
-import java.util.Calendar;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
-import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -49,12 +39,6 @@ public class MemberService extends DefaultOAuth2UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender mailSender;
-    private final MailRepository mailRepository;
-    private final AirplaneRepository airplaneRepository;
-    private final CalendarsRepository calendarsRepository;
-    private final CounselingLogRepository counselingLogRepository;
-    private final SolutionRepository solutionRepository;
-    private final ChatbotRepository chatbotRepository;
 
     //회원가입
     public void register(RegisterDto registerRequestDto) {
@@ -62,7 +46,6 @@ public class MemberService extends DefaultOAuth2UserService {
         String password = registerRequestDto.getPassword();
         String nickname = registerRequestDto.getNickname();
         String loginType = registerRequestDto.getLoginType();
-        validateRegister(email, password, nickname);
         String encryptedPassword = encoder.encode(password);
         RegisterDto newRegisterDto = RegisterDto.builder()
             .email(email)
@@ -73,6 +56,9 @@ public class MemberService extends DefaultOAuth2UserService {
         Member member = MemberConverter.convertToEntity(newRegisterDto);
         if (!memberRepository.existsByEmail(email)) {
             memberRepository.save(member);
+        } else {
+            Member orgMember = memberRepository.findByEmail(email).orElseThrow();
+            registerOrgMember(orgMember, newRegisterDto, "general");
         }
     }
 
@@ -82,7 +68,6 @@ public class MemberService extends DefaultOAuth2UserService {
         String nickname = socialRegisterDto.getNickname();
         String loginType = socialRegisterDto.getLoginType();
         JwtTokenDto token = socialRegisterDto.getToken();
-        validateNickname(nickname);
         RegisterDto newRegisterDto = RegisterDto.builder()
             .email(email)
             .password("")
@@ -93,7 +78,24 @@ public class MemberService extends DefaultOAuth2UserService {
         if (!memberRepository.existsByEmail(email)) {
             member.setRefreshToken(token.getRefreshToken());
             memberRepository.save(member);
+        } else {
+            Member orgMember = memberRepository.findByEmail(email).orElseThrow();
+            registerOrgMember(orgMember, newRegisterDto, "social");
         }
+    }
+
+    //기존 회원 가입
+    public void registerOrgMember(Member member, RegisterDto registerDto, String registerType) {
+        member.setNickname(registerDto.getNickname());
+        if (registerType.equals("general")) {
+            member.setPassword(registerDto.getPassword());
+        } else {
+            member.setPassword("");
+        }
+        member.setLoginType(registerDto.getLoginType());
+        member.changeStatus();
+        member.setInactiveDate(null);
+        memberRepository.saveAndFlush(member);
     }
 
     //로그인
@@ -182,7 +184,6 @@ public class MemberService extends DefaultOAuth2UserService {
     public void changeNickname(String email, String nickname) {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        validateNickname(nickname);
         member.setNickname(nickname);
         memberRepository.save(member);
     }
@@ -196,7 +197,6 @@ public class MemberService extends DefaultOAuth2UserService {
         if (!encoder.matches(oldPw, member.getPassword())) {
             throw new ErrorHandler(ErrorStatus.WRONG_PASSWORD);
         }
-        validatePassword(newPw);
         member.setPassword(encoder.encode(newPw));
         memberRepository.save(member);
     }
@@ -205,20 +205,15 @@ public class MemberService extends DefaultOAuth2UserService {
     public void deleteAccount(String email) {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        deleteAll(member);
-    }
-
-    //닉네임, 비밀번호, 이메일 유효 검증
-    public void validateRegister(String email, String password, String nickname) {
-        validateEmail(email);
-        validatePassword(password);
-        validateNickname(nickname);
+        member.changeStatus();
+        member.setInactiveDate(LocalDateTime.now());
+        memberRepository.saveAndFlush(member);
     }
 
     //이메일 중복 조회
     public EmailValidationResponseDto validateDuplicate(String email) {
         Optional<Member> findMember = memberRepository.findByEmail(email);
-        if (findMember.isEmpty()) {
+        if (findMember.isEmpty() || !findMember.get().isStatus()) {
             return EmailValidationResponseDto.builder()
                 .isValid(true)
                 .build();
@@ -228,47 +223,4 @@ public class MemberService extends DefaultOAuth2UserService {
                 .build();
         }
     }
-
-    //이메일 형식 확인
-    public void validateEmail(String email) {
-        if (!Pattern.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$", email)) {
-            throw new ErrorHandler(ErrorStatus.INVALID_EMAIL_FORMAT);
-        }
-    }
-
-    //비밀번호 형식 확인
-    public void validatePassword(String password) {
-        if (!Pattern.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,16}$", password)) {
-            throw new ErrorHandler(ErrorStatus.INVALID_PASSWORD_FORMAT);
-        }
-    }
-
-    //닉네임 형식 확인
-    public void validateNickname(String nickname) {
-        if (!Pattern.matches("^[가-힣a-zA-Z]{1,10}$", nickname)) {
-            throw new ErrorHandler(ErrorStatus.INVALID_NICKNAME_FORMAT);
-        }
-    }
-
-    //회원 탈퇴 시 관련 데이터 모두 삭제
-    public void deleteAll(Member member) {
-        mailRepository.deleteByMember(member);
-        airplaneRepository.deleteByReceiverId(member);
-        airplaneRepository.deleteBySenderId(member);
-        List<Calendars> calendars = calendarsRepository.findByUserId(member);
-        for (Calendars calendar : calendars) {
-            List<CounselingLog> logs = counselingLogRepository.findByCalendars(calendar);
-
-            for (CounselingLog log : logs) {
-                solutionRepository.deleteByCounselingLogId(log.getId());
-                chatbotRepository.deleteByCounselingLogId(log.getId());
-            }
-
-            counselingLogRepository.deleteByUserId(member);
-        }
-        calendarsRepository.deleteByUserId(member);
-        memberRepository.delete(member);
-    }
-
-
 }

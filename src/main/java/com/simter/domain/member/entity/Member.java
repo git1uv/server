@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import java.util.Collection;
 import java.util.List;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import org.springframework.security.core.GrantedAuthority;
@@ -114,8 +113,8 @@ public class Member implements UserDetails {
         this.nickname = nickname;
     }
 
-    public void changeStatusToInactive() {
-        this.status = false;
+    public void changeStatus() {
+        this.status = !this.status;
     }
 
     public void setInactiveDate(LocalDateTime inactiveDate) {
@@ -125,4 +124,6 @@ public class Member implements UserDetails {
     public void setChatbot(String chatbot) {
         this.chatbot = chatbot;
     }
+
+    public void setLoginType(String loginType) {this.loginType = loginType;}
 }
