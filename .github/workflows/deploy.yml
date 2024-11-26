@@ -70,7 +70,6 @@ jobs:
           port: 22
           script: |
             sudo docker pull cowboysj/simter:latest
-            sudo docker stop simter-container
             sudo docker rm simter-container
             sudo docker run -d -p 8080:8080 --name simter-container cowboysj/simter:latest
             
