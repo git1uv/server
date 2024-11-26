@@ -75,7 +75,7 @@ jobs:
 
       - name: Pull and run Docker on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_IP }} << 'EOF'
             sudo docker pull cowboysj/simter:latest
           
             if sudo docker ps -a -q -f name=simter-container | grep -q .; then
