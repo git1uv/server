@@ -61,28 +61,17 @@ jobs:
             JAVA_HOME=/usr/local/openjdk-21 \
           tags: cowboysj/simter:latest
 
-  deploy-to-ec2:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@master
         with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
-      - name: Pull and run Docker on EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_IP }} << 'EOF'
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          port: 22
+          script: |
             sudo docker pull cowboysj/simter:latest
-          
-            if sudo docker ps -a -q -f name=simter-container | grep -q .; then
-              sudo docker stop simter-container
-              sudo docker rm simter-container
-            fi
-          
+            sudo docker stop simter-container
+            sudo docker rm simter-container
             sudo docker run -d \
               -p 8080:8080 \
               --name simter-container \
@@ -102,6 +91,4 @@ jobs:
               -e SERVER_URL=${{ secrets.SERVER_URL }} \
               -e JAVA_HOME=/usr/local/openjdk-21 \
               cowboysj/simter:latest
-          
-            sudo docker system prune -f
-          EOF
+            
