@@ -13,9 +13,11 @@ import com.simter.domain.chatbot.dto.ClaudeResponseDto;
 import com.simter.domain.chatbot.dto.CounselingResponseDto;
 import com.simter.domain.chatbot.entity.ChatbotMessage;
 import com.simter.domain.chatbot.entity.CounselingLog;
+import com.simter.domain.chatbot.entity.Opinion;
 import com.simter.domain.chatbot.entity.Solution;
 import com.simter.domain.chatbot.repository.ChatbotRepository;
 import com.simter.domain.chatbot.repository.CounselingLogRepository;
+import com.simter.domain.chatbot.repository.OpinionRepository;
 import com.simter.domain.chatbot.repository.SolutionRepository;
 import com.simter.domain.mail.converter.MailConverter;
 import com.simter.domain.mail.entity.Mail;
@@ -63,6 +65,7 @@ public class ClaudeAPIService {
     private final CounselingLogRepository counselingLogRepository;
     private final SolutionRepository solutionRepository;
     private final CalendarsRepository calendarsRepository;
+    private final OpinionRepository opinionRepository;
 
     // Claude API를 호출
     private Mono<String> callClaudeAPI(String systemPrompt, String conversationContext, int maxTokens) {
@@ -105,7 +108,7 @@ public class ClaudeAPIService {
     }
 
     @Transactional
-    public Mono<ClaudeResponseDto> chatWithClaude(ClaudeRequestDto request, Long counselingLogId) {
+    public Mono<ClaudeResponseDto> chatWithClaude(ClaudeRequestDto request, Long counselingLogId, String email) {
         CounselingLog counselingLog = counselingLogRepository.findById(counselingLogId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CHATBOT_SESSION_NOT_FOUND));
         String chatbotType = counselingLog.getChatbotType();
@@ -125,6 +128,12 @@ public class ClaudeAPIService {
 
         // 프롬프트 선택
         String chatbotPrompt = selectSystemPrompt(chatbotType);
+
+        String opinion = opinionRepository.findTop3ByMemberEmailOrderByCreatedAtDesc(email).stream()
+            .map(Opinion::getContent)
+            .collect(Collectors.joining(", "));
+
+
         String systemPrompt = "<systemPrompt>"
                 + "<redflag>"
                 + "사용자의 currentMessage가 위험한 내용이나 우울증과 관련된 신호를 포함하는지 판단할 때는, 단순히 부정적인 단어만으로 판단하지 말고 전체적인 문맥을 반드시 고려해야 해 위험 신호는 사용자가 극단적인 감정을 표현하는 경우가 많지만, 이 표현이 반드시 위험한 상태를 의미하는 것은 아니야. 예를 들어, '죽고싶어'나 '죽을 거 같아'와 같은 직접적인 표현은 위험 신호로 간주될 수 있지만, 이런 표현이 사용자의 기분이나 상황을 정확히 반영하지 않을 수 있어. 다음은 부정적인 단어가 포함되어 있지만, 전체적인 의미는 긍정적인 경우의 예시야:\n"
@@ -147,6 +156,7 @@ public class ClaudeAPIService {
                 + "</emotion>"
                 + "<message>"
                 + "You are a psychological counselor. Your role is to provide empathetic and supportive responses to users seeking advice or sharing their experiences.\n"
+                + "And please respond by reflecting the following user feedback." + opinion
                 + "Keep this summary between 300 and 350 characters."
                 + "</message>"
                 + "<example>"

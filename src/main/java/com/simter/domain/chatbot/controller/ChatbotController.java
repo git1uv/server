@@ -75,10 +75,12 @@ public class ChatbotController {
 
     @Operation(summary = "챗봇과의 대화 API", description = "챗봇 채팅 API")
     @PostMapping("/chatting")
-    public Mono<ApiResponse<ClaudeResponseDto>> chatting(
+    public Mono<ApiResponse<ClaudeResponseDto>> chatting(HttpServletRequest request,
             @RequestBody ClaudeRequestDto requestDto,
             @RequestParam Long counselingLogId) {
-        return claudeAPIService.chatWithClaude(requestDto, counselingLogId)
+        JwtTokenDto token = jwtTokenProvider.resolveToken(request);
+        String email = jwtTokenProvider.getEmail(token.getAccessToken());
+        return claudeAPIService.chatWithClaude(requestDto, counselingLogId, email)
                 .map(response -> ApiResponse.onSuccessCustom(SuccessStatus.CHATBOT_CHATTING, response));
     }
 
