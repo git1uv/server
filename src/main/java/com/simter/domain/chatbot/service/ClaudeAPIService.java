@@ -490,7 +490,7 @@ public class ClaudeAPIService {
     }
 
     private String cleanXmlString(String xml) {
-        return xml.trim().replaceFirst("^([\\W&&[^<]]+)<", "<");
+        return xml.trim().replaceAll(">\\s+<", "><").replaceAll("\\s*<", "<").replaceAll(">\\s*", ">");
     }
 }
 
