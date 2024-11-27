@@ -5,6 +5,7 @@ import static java.lang.System.getenv;
 import com.simter.apiPayload.code.status.ErrorStatus;
 import com.simter.apiPayload.exception.handler.ErrorHandler;
 import com.simter.domain.member.dto.JwtTokenDto;
+import com.simter.domain.member.dto.TokenResponse.Token;
 import com.simter.domain.member.entity.Member;
 import com.simter.domain.member.repository.MemberRepository;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -44,6 +45,7 @@ public class JwtTokenProvider {
     private String secretKey = Base64.getEncoder().encodeToString(
         Objects.requireNonNull(env.get("JWT_SECRET")).getBytes());
     private final MemberRepository memberRepository;
+    private final TokenRedisRepository tokenRedisRepository;
     private static final String AUTHORITIES_KEY = "ROLE_USER";
 
     public JwtTokenDto generateToken(Authentication authentication, String email) {
@@ -73,7 +75,6 @@ public class JwtTokenProvider {
 
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        member.setRefreshToken(refreshToken);
         memberRepository.save(member);
 
         return JwtTokenDto.builder()
@@ -109,6 +110,9 @@ public class JwtTokenProvider {
             .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact();
 
+        tokenRedisRepository.save(
+            new TokenRedis(email, accessToken, refreshToken));
+
         return JwtTokenDto.builder()
             .grantType("Bearer")
             .accessToken(accessToken)
@@ -134,13 +138,20 @@ public class JwtTokenProvider {
     }
 
     //액세스 토큰과 리프레시 토큰 함께 재발행
-    public JwtTokenDto reissueToken(String email) {
+    public JwtTokenDto reissueToken(String email, String accessToken) {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new ErrorHandler(ErrorStatus.JWT_TOKEN_NOT_FOUND));
 
+        TokenRedis tokenRedis = tokenRedisRepository.findByAccessToken(accessToken)
+            .orElseThrow();
         Authentication authentication = getAuthentication(email);
 
-        return generateToken(authentication, member.getEmail());
+        JwtTokenDto newToken =  generateToken(authentication, member.getEmail());
+
+        tokenRedis.updateToken(newToken.getAccessToken(), newToken.getRefreshToken());
+        tokenRedisRepository.save(tokenRedis);
+
+        return newToken;
     }
 
     public JwtTokenDto resolveToken(HttpServletRequest request) {
@@ -184,5 +195,13 @@ public class JwtTokenProvider {
     public String getEmail(String token) {
         Claims claims = getClaims(token);
         return claims.get("email", String.class);
+    }
+
+    public Long getRemainingExpirationTime(String token) {
+        Claims claims = getClaims(token);
+        Date expirationDate = claims.getExpiration();
+        long now = (new Date()).getTime();
+
+        return expirationDate.getTime() - now;
     }
 }
